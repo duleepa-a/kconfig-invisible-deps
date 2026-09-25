@@ -1,0 +1,57 @@
+Cozart-config search: full re-run
+Run id / timestamp : 20260925_004337   (folder name and the readable_csv_ / annotated_ / by_symbol_ file names)
+
+WHAT WAS RE-RUN (nothing here was reused from earlier results)
+  1. Fresh copy of the kernel tree, make mrproper, Cozart's base.config, make olddefconfig
+  2. Full build: make -k -j8 net/ kernel/ mm/ lib/ fs/   (exit 0, 0 errors, DEBUG_INFO=y)
+  3. netdep.py extraction (two passes, as in the original runs)
+  4. match.py funnel: net/ boot, net/ lazy, fs/ boot
+  5. readable_csv.py (tool-only CSV), then annotate.py (adds the hand-written verdicts)
+
+INPUTS
+  Kernel source        : Ubuntu cosmic 4.18.0-25.26 (commit 66e4c0b79), Makefile continuation lines pre-joined
+  Compiler             : gcc 7.5.0 (Ubuntu 18.04)
+  Cozart base config   : config-db/linux-cosmic/cosmic/base.config  sha256 aaaccf22ad049168
+  Resolved .config     : after olddefconfig, sha256 dbbaf4cff8ee83fa; identical (0 differing option lines)
+                         to the config saved from the original run
+  Cozart composed set  : composed_nginx.txt, 984 option names (985 lines including one blank line), sha256 2ab12740228aff3b (used only for the F9 label)
+  Tool versions (sha256, identical to the repo copies):
+    netdep.py 9c996685ccf86a8d   match.py 39e592b0317a9238   makefile_cond.py 7cf28a017387c32c
+
+COMMANDS
+  netdep.py --root /work/cz --subdirs net kernel mm lib      --out out_cz_net --exclude-file cz_composite_net.txt
+  netdep.py --root /work/cz --subdirs net kernel mm lib fs   --out out_cz_fs  --exclude-file cz_composite_all.txt
+  match.py --filename-db out/filename.db --composed-config composed_nginx.txt --root-prefix /work/cz/ --root /work/cz
+           --use-transitive --writer-mode boot --reader-scope net/   (net boot)
+           --use-transitive --writer-mode lazy --reader-scope net/   (net lazy)
+           --use-transitive --writer-mode boot --reader-scope fs/    (fs boot, on the fs extraction)
+  Composite (LD [M]) objects excluded: 97 (net set) and 159 (with fs), derived from this build's log.
+
+RESULTS OF THIS RUN
+  Objects extracted : 1,870 (net/kernel/mm/lib) and 3,026 (with fs/)
+  Extraction        : 39,624 / 67,257 global symbols; 207,254 / 386,851 reference sites; 14 / 78 unclassified instructions
+  Funnel            : boot  F5 = 1,723 pairs, F9 exposed = 17
+                      lazy  F5 = 2,608 pairs, F9 exposed = 27
+                      fs    F5 = 126 pairs,   F9 exposed = 0
+  Output CSV rows   : 4,457 (boot 1,723 + lazy 2,608 + fs 126)
+
+REPRODUCIBILITY CHECKS AGAINST THE EARLIER (SAVED) RUNS
+  Object counts, composite lists            : identical
+  Raw extraction (globals.tsv, xref.tsv)    : identical line for line after rewriting the path prefix
+  Candidate tables (boot, lazy, fs)         : identical rows and identical order to candidates_*_fix2.tsv
+
+FILES IN THIS FOLDER
+  readable_csv_20260925_004337.csv   tool output only: 21 columns, includes a generated why_flagged sentence; no manual data
+  annotated_20260925_004337.csv      the same 4,457 rows plus MANUAL_* columns from results/manual_verdicts.csv
+  by_symbol_20260925_004337.csv      one row per symbol, tool summary plus the manual verdict
+  tool_output/                       raw candidate TSVs, funnel counts, extraction logs
+  raw_extraction/                    gzipped globals/xref tables from netdep.py, and unclassified-instruction lists
+
+NOT INCLUDED
+  The ops-table search (match_ops.py) was not re-run and has no readable CSV; its schema differs.
+  Manual verdicts are copied from earlier audits (FINDINGS.md Parts 1-15) and were not re-audited in this run.
+
+ADDED CHECK (after the run): exposure label with nginx.config UNION nginx-test.config
+  The label above uses nginx.config only. Cozart's real nginx Applet unions it with nginx-test.config, which adds
+  2 options (CONFIG_BPFILTER, CONFIG_TMPFS_XATTR). Re-running match.py on the same extraction with the union gave
+  F9 exposed pairs boot 17, lazy 27, fs 0: identical to the counts above. No candidate's exposure changed.

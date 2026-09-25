@@ -1,0 +1,14 @@
+
+candidates written to /work/out_fs2/candidates.tsv
+F0_definitions	53847
+F0_distinct_symbols	51032
+F1_symbols_with_init_writer	340
+F2_symbols_with_init_writer_and_net_reader	151
+F3_cross_unit_pairs	2396
+F4_link_error_filter_survives	611
+F5_kconfig_separable_pairs	126
+F6_sole_writer_pairs	1
+F7_risky_section_pairs	0
+F8_unguarded_reader_pairs	36
+F9_cozart_exposed_pairs	0
+candidates_total	126

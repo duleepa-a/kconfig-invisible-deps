@@ -1,0 +1,18 @@
+type	var	field	init_file	init_line	field_cond	reader_file	reader_line	reader_cond	reader_text
+nf_conntrack_l4proto	nf_conntrack_l4proto_dccp	ctnl_timeout	net/netfilter/nf_conntrack_proto_dccp.c	759	(CONFIG_NF_CONNTRACK_TIMEOUT)	net/netfilter/nfnetlink_cttimeout.c	67	True	ret = l4proto->ctnl_timeout.nlattr_to_obj(tb, net, timeout);
+nf_conntrack_l4proto	nf_conntrack_l4proto_dccp	ctnl_timeout	net/netfilter/nf_conntrack_proto_dccp.c	759	(CONFIG_NF_CONNTRACK_TIMEOUT)	net/netfilter/nfnetlink_cttimeout.c	191	True	ret = l4proto->ctnl_timeout.obj_to_nlattr(skb, &timeout->timeout.data);
+nf_conntrack_l4proto	nf_conntrack_l4proto_dccp	ctnl_timeout	net/netfilter/nf_conntrack_proto_dccp.c	759	(CONFIG_NF_CONNTRACK_TIMEOUT)	net/netfilter/nfnetlink_cttimeout.c	408	True	ret = l4proto->ctnl_timeout.obj_to_nlattr(skb, timeouts);
+nf_conntrack_l4proto	nf_conntrack_l4proto_gre	ctnl_timeout	net/netfilter/nf_conntrack_proto_gre.c	325	(CONFIG_NF_CONNTRACK_TIMEOUT)	net/netfilter/nfnetlink_cttimeout.c	67	True	ret = l4proto->ctnl_timeout.nlattr_to_obj(tb, net, timeout);
+nf_conntrack_l4proto	nf_conntrack_l4proto_gre	ctnl_timeout	net/netfilter/nf_conntrack_proto_gre.c	325	(CONFIG_NF_CONNTRACK_TIMEOUT)	net/netfilter/nfnetlink_cttimeout.c	191	True	ret = l4proto->ctnl_timeout.obj_to_nlattr(skb, &timeout->timeout.data);
+nf_conntrack_l4proto	nf_conntrack_l4proto_gre	ctnl_timeout	net/netfilter/nf_conntrack_proto_gre.c	325	(CONFIG_NF_CONNTRACK_TIMEOUT)	net/netfilter/nfnetlink_cttimeout.c	408	True	ret = l4proto->ctnl_timeout.obj_to_nlattr(skb, timeouts);
+nf_conntrack_l4proto	nf_conntrack_l4proto_sctp	ctnl_timeout	net/netfilter/nf_conntrack_proto_sctp.c	672	(CONFIG_NF_CONNTRACK_TIMEOUT)	net/netfilter/nfnetlink_cttimeout.c	67	True	ret = l4proto->ctnl_timeout.nlattr_to_obj(tb, net, timeout);
+nf_conntrack_l4proto	nf_conntrack_l4proto_sctp	ctnl_timeout	net/netfilter/nf_conntrack_proto_sctp.c	672	(CONFIG_NF_CONNTRACK_TIMEOUT)	net/netfilter/nfnetlink_cttimeout.c	191	True	ret = l4proto->ctnl_timeout.obj_to_nlattr(skb, &timeout->timeout.data);
+nf_conntrack_l4proto	nf_conntrack_l4proto_sctp	ctnl_timeout	net/netfilter/nf_conntrack_proto_sctp.c	672	(CONFIG_NF_CONNTRACK_TIMEOUT)	net/netfilter/nfnetlink_cttimeout.c	408	True	ret = l4proto->ctnl_timeout.obj_to_nlattr(skb, timeouts);
+pernet_operations	brnf_net_ops	init	net/bridge/br_netfilter_hooks.c	1153	(CONFIG_SYSCTL)	net/sctp/protocol.c	576	True	if (newsk->sk_prot->init(newsk)) {
+pernet_operations	brnf_net_ops	init	net/bridge/br_netfilter_hooks.c	1153	(CONFIG_SYSCTL)	net/netfilter/nf_tables_api.c	3715	True	err = ops->init(set, &desc, nla);
+pernet_operations	brnf_net_ops	init	net/bridge/br_netfilter_hooks.c	1153	(CONFIG_SYSCTL)	net/netfilter/nf_tables_api.c	5074	True	err = ops->init(ctx, (const struct nlattr * const *)tb, obj);
+pernet_operations	brnf_net_ops	init	net/bridge/br_netfilter_hooks.c	1153	(CONFIG_SYSCTL)	net/netfilter/nf_tables_api.c	5834	True	err = type->init(&flowtable->data);
+pernet_operations	brnf_net_ops	init	net/bridge/br_netfilter_hooks.c	1153	(CONFIG_SYSCTL)	net/sched/cls_api.c	274	True	err = tp->ops->init(tp);
+pernet_operations	brnf_net_ops	init	net/bridge/br_netfilter_hooks.c	1153	(CONFIG_SYSCTL)	net/sched/act_api.c	916	True	err = a_o->init(net, tb[TCA_ACT_OPTIONS], est, &a, ovr, bind,
+pernet_operations	brnf_net_ops	init	net/bridge/br_netfilter_hooks.c	1153	(CONFIG_SYSCTL)	net/sched/act_api.c	919	True	err = a_o->init(net, nla, est, &a, ovr, bind, rtnl_held,
+pernet_operations	brnf_net_ops	init	net/bridge/br_netfilter_hooks.c	1153	(CONFIG_SYSCTL)	net/sched/act_api.c	928	True	* if it exists and is only bound to in a_o->init() then

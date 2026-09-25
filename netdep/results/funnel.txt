@@ -1,0 +1,12 @@
+F0_definitions	33125
+F0_distinct_symbols	31046
+F1_symbols_with_init_writer	129
+F2_symbols_with_init_writer_and_net_reader	42
+F3_cross_unit_pairs	3597
+F4_link_error_filter_survives	1424
+F5_kconfig_separable_pairs	6
+F6_sole_writer_pairs	0
+F7_risky_section_pairs	0
+F8_unguarded_reader_pairs	5
+F9_cozart_exposed_pairs	0
+candidates_total	6

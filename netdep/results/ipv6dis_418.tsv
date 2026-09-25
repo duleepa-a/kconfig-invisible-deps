@@ -1,0 +1,77 @@
+file	line	func	callee	callee_file	guard	dual_stack	v6_signal	outside_ipv6dir	snippet
+net/tipc/udp_media.c	197	tipc_udp_xmit	ip6_dst_hoplimit	net/ipv6/output_core.c	UNGUARDED	1	1	1	ttl = ip6_dst_hoplimit(ndst);
+net/sctp/ipv6.c	225	sctp_v6_xmit	ip6_xmit	net/ipv6/ip6_output.c	UNGUARDED	0	0	1	res = ip6_xmit(sk, skb, fl6, sk->sk_mark, rcu_dereference(np->opt),
+net/sctp/ipv6.c	274	sctp_v6_get_dst	ip6_dst_lookup_flow	net/ipv6/ip6_output.c	UNGUARDED	0	1	1	dst = ip6_dst_lookup_flow(sk, fl6, final_p);
+net/sctp/ipv6.c	327	sctp_v6_get_dst	ip6_dst_lookup_flow	net/ipv6/ip6_output.c	UNGUARDED	0	1	1	bdst = ip6_dst_lookup_flow(sk, fl6, final_p);
+net/ipv4/ip_gre.c	196	ipgre_err	ip6_err_gen_icmpv6_unreach	net/ipv6/icmp.c	UNGUARDED	1	1	1	!ip6_err_gen_icmpv6_unreach(skb, iph->ihl * 4 + tpi->hdr_len,
+net/netfilter/xt_TEE.c	48	tee_tg6	nf_dup_ipv6	net/ipv6/netfilter/nf_dup_ipv6.c	UNGUARDED	0	0	1	nf_dup_ipv6(xt_net(par), skb, xt_hooknum(par), &info->gw.in6, oif);
+net/netfilter/nft_reject_inet.c	50	nft_reject_inet_eval	nf_send_reset6	net/ipv6/netfilter/nf_reject_ipv6.c	UNGUARDED	1	1	1	nf_send_reset6(nft_net(pkt), pkt->skb, nft_hook(pkt));
+net/netfilter/nft_fib_netdev.c	43	nft_fib_netdev_eval	nft_fib6_eval	net/ipv6/netfilter/nft_fib_ipv6.c	UNGUARDED	1	1	1	return nft_fib6_eval(expr, regs, pkt);
+net/netfilter/nft_fib_inet.c	38	nft_fib_inet_eval	nft_fib6_eval	net/ipv6/netfilter/nft_fib_ipv6.c	UNGUARDED	1	1	1	return nft_fib6_eval(expr, regs, pkt);
+net/netfilter/ipvs/ip_vs_ctl.c	82	__ip_vs_addr_is_local_v6	ip6_route_output	include/net/ip6_route.h	UNGUARDED	0	0	1	struct dst_entry *dst = ip6_route_output(net, NULL, &fl6);
+net/netfilter/ipvs/ip_vs_sync.c	1424	join_mcast_group6	ipv6_sock_mc_join	net/ipv6/mcast.c	UNGUARDED	0	0	1	ret = ipv6_sock_mc_join(sk, dev->ifindex, addr);
+net/netfilter/ipvs/ip_vs_core.c	728	ip_vs_route_me_harder	ip6_route_me_harder	net/ipv6/netfilter.c	UNGUARDED	0	1	1	ip6_route_me_harder(ipvs->net, skb) != 0)
+net/netfilter/ipvs/ip_vs_xmit.c	429	__ip_vs_route_output_v6	ip6_route_output	include/net/ip6_route.h	UNGUARDED	0	0	1	dst = ip6_route_output(net, NULL, &fl6);
+net/netfilter/ipvs/ip_vs_xmit.c	435	__ip_vs_route_output_v6	ipv6_dev_get_saddr	net/ipv6/addrconf.c	UNGUARDED	0	0	1	ipv6_dev_get_saddr(net, ip6_dst_idev(dst)->dev,
+net/bridge/br_multicast.c	503	br_ip6_multicast_alloc_query	ipv6_dev_get_saddr	net/ipv6/addrconf.c	UNGUARDED	0	1	1	if (ipv6_dev_get_saddr(dev_net(br->dev), br->dev, &ip6h->daddr, 0,
+net/rxrpc/peer_object.c	193	rxrpc_assess_MTU_size	ip6_route_output	include/net/ip6_route.h	UNGUARDED	1	1	1	dst = ip6_route_output(&init_net, NULL, fl6);
+net/dccp/ipv6.c	147	dccp_v6_err	inet6_csk_update_pmtu	net/ipv6/inet6_connection_sock.c	GUARDED	0	0	1	dst = inet6_csk_update_pmtu(sk, ntohl(info));
+net/dccp/ipv6.c	214	dccp_v6_send_response	ip6_dst_lookup_flow	net/ipv6/ip6_output.c	UNGUARDED	0	0	1	dst = ip6_dst_lookup_flow(sk, &fl6, final_p);
+net/dccp/ipv6.c	234	dccp_v6_send_response	ip6_xmit	net/ipv6/ip6_output.c	UNGUARDED	0	0	1	err = ip6_xmit(sk, skb, &fl6, sk->sk_mark, opt, np->tclass);
+net/dccp/ipv6.c	285	dccp_v6_ctl_send_reset	ip6_dst_lookup_flow	net/ipv6/ip6_output.c	UNGUARDED	0	0	1	dst = ip6_dst_lookup_flow(ctl_sk, &fl6, NULL);
+net/dccp/ipv6.c	288	dccp_v6_ctl_send_reset	ip6_xmit	net/ipv6/ip6_output.c	UNGUARDED	0	0	1	ip6_xmit(ctl_sk, skb, &fl6, 0, NULL, 0);
+net/dccp/ipv6.c	461	dccp_v6_request_recv_sock	inet6_csk_route_req	net/ipv6/inet6_connection_sock.c	UNGUARDED	1	0	1	dst = inet6_csk_route_req(sk, &fl6, req, IPPROTO_DCCP);
+net/dccp/ipv6.c	915	dccp_v6_connect	ip6_dst_lookup_flow	net/ipv6/ip6_output.c	UNGUARDED	1	1	1	dst = ip6_dst_lookup_flow(sk, &fl6, final_p);
+net/core/filter.c	4501	bpf_push_seg6_encap	seg6_do_srh_inline	net/ipv6/seg6_iptunnel.c	UNGUARDED	0	1	1	err = seg6_do_srh_inline(skb, srh);
+net/core/filter.c	4506	bpf_push_seg6_encap	seg6_do_srh_encap	net/ipv6/seg6_iptunnel.c	UNGUARDED	0	1	1	err = seg6_do_srh_encap(skb, srh, IPPROTO_IPV6);
+net/core/filter.c	4519	bpf_push_seg6_encap	seg6_lookup_nexthop	net/ipv6/seg6_local.c	UNGUARDED	0	1	1	return seg6_lookup_nexthop(skb, NULL, 0);
+net/core/filter.c	4616	BPF_CALL_4	seg6_lookup_nexthop	net/ipv6/seg6_local.c	UNGUARDED	0	0	1	return seg6_lookup_nexthop(skb, (struct in6_addr *)param, 0);
+net/core/filter.c	4620	BPF_CALL_4	seg6_lookup_nexthop	net/ipv6/seg6_local.c	UNGUARDED	0	0	1	return seg6_lookup_nexthop(skb, NULL, *(int *)param);
+net/l2tp/l2tp_core.c	1040	l2tp_xmit_core	inet6_csk_xmit	net/ipv6/inet6_connection_sock.c	UNGUARDED	0	1	1	error = inet6_csk_xmit(tunnel->sock, skb, NULL);
+net/l2tp/l2tp_ip6.c	396	l2tp_ip6_connect	__ip6_datagram_connect	net/ipv6/datagram.c	UNGUARDED	0	1	1	rc = __ip6_datagram_connect(sk, uaddr, addr_len);
+net/l2tp/l2tp_ip6.c	483	l2tp_ip6_push_pending_frames	ip6_push_pending_frames	net/ipv6/ip6_output.c	UNGUARDED	0	0	1	err = ip6_push_pending_frames(sk);
+net/l2tp/l2tp_ip6.c	624	l2tp_ip6_sendmsg	ip6_dst_lookup_flow	net/ipv6/ip6_output.c	UNGUARDED	0	1	1	dst = ip6_dst_lookup_flow(sk, &fl6, final_p);
+net/l2tp/l2tp_ip6.c	631	l2tp_ip6_sendmsg	ip6_sk_dst_hoplimit	include/net/ipv6.h	UNGUARDED	0	1	1	ipc6.hlimit = ip6_sk_dst_hoplimit(np, &fl6, dst);
+net/ipv6/ipcomp6.c	77	ipcomp6_err	ip6_redirect	net/ipv6/route.c	UNGUARDED	1	1	0	ip6_redirect(skb, net, skb->dev->ifindex, 0,
+net/ipv6/ipcomp6.c	80	ipcomp6_err	ip6_update_pmtu	net/ipv6/route.c	UNGUARDED	1	1	0	ip6_update_pmtu(skb, net, info, 0, 0, sock_net_uid(net, NULL));
+net/ipv6/ip6_gre.c	495	ip6gre_err	ip6_update_pmtu	net/ipv6/route.c	UNGUARDED	0	0	0	ip6_update_pmtu(skb, net, info, 0, 0, sock_net_uid(net, NULL));
+net/ipv6/ip6_gre.c	498	ip6gre_err	ip6_redirect	net/ipv6/route.c	UNGUARDED	0	0	0	ip6_redirect(skb, net, skb->dev->ifindex, 0,
+net/ipv6/ip6_gre.c	1122	ip6gre_tnl_link_config_route	rt6_lookup	net/ipv6/route.c	UNGUARDED	0	0	0	struct rt6_info *rt = rt6_lookup(t->net,
+net/ipv6/ip6_vti.c	619	vti6_err	ip6_redirect	net/ipv6/route.c	UNGUARDED	1	1	0	ip6_redirect(skb, net, skb->dev->ifindex, 0,
+net/ipv6/ip6_vti.c	622	vti6_err	ip6_update_pmtu	net/ipv6/route.c	UNGUARDED	1	1	0	ip6_update_pmtu(skb, net, info, 0, 0, sock_net_uid(net, NULL));
+net/ipv6/ip6_vti.c	655	vti6_link_config	rt6_lookup	net/ipv6/route.c	UNGUARDED	0	0	0	struct rt6_info *rt = rt6_lookup(t->net,
+net/ipv6/sit.c	549	ipip6_err	ip6_err_gen_icmpv6_unreach	net/ipv6/icmp.c	UNGUARDED	1	0	0	if (!ip6_err_gen_icmpv6_unreach(skb, iph->ihl * 4, type, data_len))
+net/ipv6/ip6_tunnel.c	536	ip6_tnl_err	ip6_update_pmtu	net/ipv6/route.c	UNGUARDED	0	0	0	ip6_update_pmtu(skb, net, htonl(*info), 0, 0,
+net/ipv6/ip6_tunnel.c	550	ip6_tnl_err	ip6_redirect	net/ipv6/route.c	UNGUARDED	0	0	0	ip6_redirect(skb, net, skb->dev->ifindex, 0,
+net/ipv6/ip6_tunnel.c	684	ip6ip6_err	rt6_lookup	net/ipv6/route.c	UNGUARDED	0	1	0	rt = rt6_lookup(dev_net(skb->dev), &ipv6_hdr(skb2)->saddr,
+net/ipv6/ip6_tunnel.c	1117	ip6_tnl_xmit	ipv6_dev_get_saddr	net/ipv6/addrconf.c	UNGUARDED	0	1	0	ipv6_dev_get_saddr(net, ip6_dst_idev(dst)->dev,
+net/ipv6/ip6_tunnel.c	1458	ip6_tnl_link_config	rt6_lookup	net/ipv6/route.c	UNGUARDED	0	0	0	struct rt6_info *rt = rt6_lookup(t->net,
+net/ipv6/esp6.c	733	esp6_err	ip6_redirect	net/ipv6/route.c	UNGUARDED	1	1	0	ip6_redirect(skb, net, skb->dev->ifindex, 0,
+net/ipv6/esp6.c	736	esp6_err	ip6_update_pmtu	net/ipv6/route.c	UNGUARDED	1	1	0	ip6_update_pmtu(skb, net, info, 0, 0, sock_net_uid(net, NULL));
+net/ipv6/ah6.c	674	ah6_err	ip6_redirect	net/ipv6/route.c	UNGUARDED	1	1	0	ip6_redirect(skb, net, skb->dev->ifindex, 0,
+net/ipv6/ah6.c	677	ah6_err	ip6_update_pmtu	net/ipv6/route.c	UNGUARDED	1	1	0	ip6_update_pmtu(skb, net, info, 0, 0, sock_net_uid(net, NULL));
+net/ipv6/netfilter/nft_fib_ipv6.c	183	nft_fib6_eval	ip6_route_lookup	net/ipv6/route.c	UNGUARDED	0	0	0	rt = (void *)ip6_route_lookup(nft_net(pkt), &fl6, pkt->skb,
+net/ipv6/netfilter/ip6table_mangle.c	63	ip6t_mangle_out	ip6_route_me_harder	net/ipv6/netfilter.c	UNGUARDED	0	0	0	err = ip6_route_me_harder(state->net, skb);
+net/ipv6/netfilter/nft_chain_route_ipv6.c	55	nf_route_table_hook	ip6_route_me_harder	net/ipv6/netfilter.c	UNGUARDED	0	0	0	err = ip6_route_me_harder(state->net, skb);
+net/ipv6/netfilter/nf_nat_masquerade_ipv6.c	41	nf_nat_masquerade_ipv6	ipv6_dev_get_saddr	net/ipv6/addrconf.c	UNGUARDED	0	0	0	if (ipv6_dev_get_saddr(nf_ct_net(ct), out,
+net/ipv6/netfilter/nf_nat_l3proto_ipv6.c	355	nf_nat_ipv6_local_fn	ip6_route_me_harder	net/ipv6/netfilter.c	UNGUARDED	0	1	0	err = ip6_route_me_harder(state->net, skb);
+net/ipv6/netfilter/ip6t_rpfilter.c	64	rpfilter_lookup_reverse6	ip6_route_lookup	net/ipv6/route.c	UNGUARDED	1	0	0	rt = (void *)ip6_route_lookup(net, &fl6, skb, lookup_flags);
+net/6lowpan/ndisc.c	218	lowpan_ndisc_prefix_rcv_add_addr	addrconf_prefix_rcv_add_addr	net/ipv6/addrconf.c	UNGUARDED	0	0	1	err = addrconf_prefix_rcv_add_addr(net, dev, pinfo, in6_dev,
+net/6lowpan/core.c	138	lowpan_event	addrconf_add_linklocal	net/ipv6/addrconf.c	GUARDED	0	0	1	addrconf_add_linklocal(idev, &addr, 0);
+drivers/net/geneve.c	894	geneve6_xmit_skb	ip6_dst_hoplimit	net/ipv6/output_core.c	UNGUARDED	1	0	1	ttl = key->ttl ? : ip6_dst_hoplimit(dst);
+drivers/net/geneve.c	1419	geneve_link_config	rt6_lookup	net/ipv6/route.c	UNGUARDED	1	1	1	struct rt6_info *rt = rt6_lookup(geneve->net,
+drivers/net/vrf.c	189	vrf_process_v6_outbound	ip6_route_output	include/net/ip6_route.h	UNGUARDED	1	0	1	dst = ip6_route_output(net, NULL, &fl6);
+drivers/net/vrf.c	509	vrf_rt6_create	fib6_new_table	net/ipv6/ip6_fib.c	GUARDED	0	0	1	vrf->fib6_table = fib6_new_table(net, vrf->tb_id);
+drivers/net/vrf.c	514	vrf_rt6_create	ip6_dst_alloc	net/ipv6/route.c	GUARDED	0	0	1	rt6 = ip6_dst_alloc(net, dev, flags);
+drivers/net/vrf.c	951	vrf_ip6_route_lookup	ip6_pol_route	net/ipv6/route.c	UNGUARDED	0	0	1	return ip6_pol_route(net, vrf->fib6_table, ifindex, fl6, skb, flags);
+drivers/net/vxlan.c	2412	vxlan_xmit_one	ip6_dst_hoplimit	net/ipv6/output_core.c	UNGUARDED	1	1	1	ttl = ttl ? : ip6_dst_hoplimit(ndst);
+drivers/net/ipvlan/ipvlan_core.c	476	ipvlan_process_v6_outbound	ip6_route_output	include/net/ip6_route.h	UNGUARDED	0	0	1	dst = ip6_route_output(net, NULL, &fl6);
+drivers/net/ipvlan/ipvlan_core.c	820	ipvlan_l3_rcv	ip6_route_input_lookup	net/ipv6/route.c	UNGUARDED	1	1	1	dst = ip6_route_input_lookup(dev_net(sdev), sdev, &fl6,
+drivers/net/ethernet/broadcom/cnic.c	3704	cnic_get_v6_route	ip6_route_output	include/net/ip6_route.h	UNGUARDED	0	1	1	*dst = ip6_route_output(&init_net, NULL, &fl6);
+drivers/net/ethernet/chelsio/libcxgb/libcxgb_cm.c	135	cxgb_find_route6	ip6_route_output	include/net/ip6_route.h	UNGUARDED	0	1	1	dst = ip6_route_output(&init_net, NULL, &fl6);
+drivers/net/ethernet/mellanox/mlxsw/spectrum_span.c	440	mlxsw_sp_span_gretap6_route	ip6_route_output	include/net/ip6_route.h	UNGUARDED	0	0	1	dst = ip6_route_output(t->net, NULL, &fl6);
+drivers/net/ethernet/mellanox/mlx5/core/en_tc.c	2156	mlx5e_route_lookup_ipv6	ip6_dst_hoplimit	net/ipv6/output_core.c	UNGUARDED	0	1	1	*out_ttl = ip6_dst_hoplimit(dst);
+drivers/infiniband/core/addr.c	438	addr6_resolve	ip6_dst_hoplimit	net/ipv6/output_core.c	UNGUARDED	0	1	1	addr->hoplimit = ip6_dst_hoplimit(dst);
+drivers/infiniband/core/cma.c	1326	validate_ipv6_net_dev	rt6_lookup	net/ipv6/route.c	UNGUARDED	0	1	1	struct rt6_info *rt = rt6_lookup(dev_net(net_dev), &dst_addr->sin6_addr,
+drivers/infiniband/hw/qedr/qedr_iw_cm.c	450	qedr_addr6_resolve	ip6_route_output	include/net/ip6_route.h	UNGUARDED	0	0	1	dst = ip6_route_output(&init_net, NULL, &fl6);
+drivers/infiniband/hw/i40iw/i40iw_cm.c	2047	i40iw_get_dst_ipv6	ip6_route_output	include/net/ip6_route.h	UNGUARDED	0	0	1	dst = ip6_route_output(&init_net, NULL, &fl6);

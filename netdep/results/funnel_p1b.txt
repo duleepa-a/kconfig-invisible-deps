@@ -1,0 +1,5 @@
+G1_same_object_writer_reader_pairs	1102
+G2_have_a_recorded_guard_on_either_side	376
+G3_conditions_differ	95
+G4_sat_separable	48
+candidates_total	48

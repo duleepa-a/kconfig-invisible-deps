@@ -1,0 +1,9 @@
+commit	date	subsystem	bug	state_type	writer_absent_via	in_v4.18	detector_could_see	detector_actually_surfaced	initcontent_detector
+48bd0d68cd	2019-08	net/bridge	unguarded nf_ipv6_ops deref (br_nf_pre_routing_finish_ipv6)	global hook pointer	IPV6=m not loaded, or ipv6.disable=1	yes	yes	yes (in funnel; mis-triaged safe by audit)	n/a (not initializer content)
+8820914139	2019-08	net/netfilter nft_fib	NULL deref of net->ipv6.fib6_main_tbl	pernet struct field	ipv6.disable=1	yes	no (struct field)	no	n/a (not initializer content)
+173656acca	2019-02	net/ipv6 sit	ip6_err_gen_icmpv6_unreach with ipv6 disabled	ipv6 pernet/runtime state	ipv6.disable=1	yes	no (not a global symbol)	no	n/a (not initializer content)
+c0a47e44c0	2019-02	drivers/net geneve	rt6_lookup NULL deref with ipv6 disabled	pernet fib6 state	ipv6.disable=1	yes	no (not a global symbol)	no	n/a (not initializer content)
+dac91170f8	2019-09	drivers/net vrf	fib rule add for IP6MR fails when ipv6 disabled	registered rule ops	ipv6.disable=1	n/a (error, not crash)	no	no	n/a (not initializer content)
+a874752a10	2018-08	net/netfilter nft_ct	NULL deref dumping ct timeout policy when CONFIG_NF_CONNTRACK_TIMEOUT off	conditionally-populated initializer field	Kconfig (different option gates initializer vs reader)	no (feature is 4.19)	no (initializer content)	no	FOUND at nft_ct.c:925 on pre-fix tree (control tuned on this case)
+3c446e6f96	2019-03	net/kcm	net_generic(kcm_net_id) before pernet registration finishes	pernet id / init ordering	race at module load	yes	no (ordering race)	no	n/a (not initializer content)
+206b92353c	2019-03	kernel/cpu	teardown callbacks run in wrong context when CONFIG_HOTPLUG_CPU=n	control flow	Kconfig	yes	out of scope (not a data dependency)	n/a	n/a (not initializer content)

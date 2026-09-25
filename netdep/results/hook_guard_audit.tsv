@@ -1,0 +1,63 @@
+symbol	file	line	verdict	text
+nf_ipv6_ops	net/netfilter/utils.c	19	GUARDED	v6ops = rcu_dereference(nf_ipv6_ops);
+nf_ipv6_ops	net/netfilter/utils.c	42	GUARDED	v6ops = rcu_dereference(nf_ipv6_ops);
+nf_ipv6_ops	net/netfilter/utils.c	64	GUARDED	v6ops = rcu_dereference(nf_ipv6_ops);
+nf_ipv6_ops	net/netfilter/utils.c	84	GUARDED	v6ops = rcu_dereference(nf_ipv6_ops);
+nf_ipv6_ops	net/bridge/br_netfilter_hooks.c	753	GUARDED	const struct nf_ipv6_ops *v6ops = nf_get_ipv6_ops();
+nf_ipv6_ops	net/bridge/br_netfilter_ipv6.c	168	UNGUARDED	const struct nf_ipv6_ops *v6ops = nf_get_ipv6_ops();
+nf_ipv6_ops	net/openvswitch/actions.c	913	GUARDED	const struct nf_ipv6_ops *v6ops = nf_get_ipv6_ops();
+nf_ipv6_ops [via nf_get_ipv6_ops]	net/netfilter/xt_addrtype.c	50	GUARDED	v6ops = nf_get_ipv6_ops();
+nf_ipv6_ops [via nf_get_ipv6_ops]	net/netfilter/nf_conntrack_h323_main.c	757	GUARDED	v6ops = nf_get_ipv6_ops();
+nf_ipv6_ops [via nf_get_ipv6_ops]	net/ipv6/netfilter/nft_fib_ipv6.c	71	GUARDED	v6ops = nf_get_ipv6_ops();
+nf_nat_hook	net/netfilter/nf_conntrack_core.c	1672	GUARDED	nat_hook = rcu_dereference(nf_nat_hook);
+nf_nat_hook	net/netfilter/nf_conntrack_netlink.c	1445	GUARDED	nat_hook = rcu_dereference(nf_nat_hook);
+nf_nat_hook	net/netfilter/nf_conntrack_netlink.c	1457	GUARDED	nat_hook = rcu_dereference(nf_nat_hook);
+nf_nat_hook	include/linux/netfilter.h	349	GUARDED	nat_hook = rcu_dereference(nf_nat_hook);
+nf_ct_hook	net/netfilter/nfnetlink_queue.c	239	GUARDED	ct_hook = rcu_dereference(nf_ct_hook);
+nf_ct_hook	net/netfilter/core.c	599	BUG_ON_IF_NULL	ct_hook = rcu_dereference(nf_ct_hook);
+ip_ct_attach	net/netfilter/core.c	586	GUARDED	attach = rcu_dereference(ip_ct_attach);
+nfnl_ct_hook	net/netfilter/nfnetlink_log.c	686	GUARDED	nfnl_ct = rcu_dereference(nfnl_ct_hook);
+nfnl_ct_hook	net/netfilter/nfnetlink_log.c	858	NULL_TEST_ONLY	!rcu_access_pointer(nfnl_ct_hook)) {
+nfnl_ct_hook	net/netfilter/nfnetlink_log.c	863	NULL_TEST_ONLY	if (rcu_access_pointer(nfnl_ct_hook)) {
+nfnl_ct_hook	net/netfilter/nfnetlink_queue.c	449	GUARDED	nfnl_ct = rcu_dereference(nfnl_ct_hook);
+nfnl_ct_hook	net/netfilter/nfnetlink_queue.c	1204	GUARDED	nfnl_ct = rcu_dereference(nfnl_ct_hook);
+nfnl_ct_hook	net/netfilter/nfnetlink_queue.c	1302	NULL_TEST_ONLY	!rcu_access_pointer(nfnl_ct_hook)) {
+nfnl_ct_hook	net/netfilter/nfnetlink_queue.c	1307	NULL_TEST_ONLY	if (rcu_access_pointer(nfnl_ct_hook))
+nf_nat_sip_hooks	net/netfilter/nf_conntrack_sip.c	913	GUARDED	hooks = rcu_dereference(nf_nat_sip_hooks);
+nf_nat_sip_hooks	net/netfilter/nf_conntrack_sip.c	935	GUARDED	hooks = rcu_dereference(nf_nat_sip_hooks);
+nf_nat_sip_hooks	net/netfilter/nf_conntrack_sip.c	1004	GUARDED	hooks = rcu_dereference(nf_nat_sip_hooks);
+nf_nat_sip_hooks	net/netfilter/nf_conntrack_sip.c	1087	GUARDED	hooks = rcu_dereference(nf_nat_sip_hooks);
+nf_nat_sip_hooks	net/netfilter/nf_conntrack_sip.c	1258	GUARDED	hooks = rcu_dereference(nf_nat_sip_hooks);
+nf_nat_sip_hooks	net/netfilter/nf_conntrack_sip.c	1476	GUARDED	hooks = rcu_dereference(nf_nat_sip_hooks);
+nf_nat_sip_hooks	net/netfilter/nf_conntrack_sip.c	1563	GUARDED	hooks = rcu_dereference(nf_nat_sip_hooks);
+nf_ct_timeout_put_hook	net/netfilter/xt_CT.c	111	GUARDED	timeout_put = rcu_dereference(nf_ct_timeout_put_hook);
+nf_ct_timeout_put_hook	net/netfilter/xt_CT.c	338	GUARDED	timeout_put = rcu_dereference(nf_ct_timeout_put_hook);
+nf_ct_timeout_find_get_hook	net/netfilter/xt_CT.c	131	GUARDED	timeout_find_get = rcu_dereference(nf_ct_timeout_find_get_hook);
+nf_br_ops	net/bridge/br_device.c	46	GUARDED	nf_ops = rcu_dereference(nf_br_ops);
+br_should_route_hook	net/bridge/br_input.c	290	GUARDED	rhook = rcu_dereference(br_should_route_hook);
+br_fdb_test_addr_hook	net/atm/lec.c	439	GUARDED	if (br_fdb_test_addr_hook(dev, mesg->content.proxy.mac_addr)) {
+bpfilter_process_sockopt	net/ipv4/bpfilter/sockopt.c	25	GUARDED	return bpfilter_process_sockopt(sk, optname, optval, optlen, is_set);
+nf_nat_tftp_hook	net/netfilter/nf_conntrack_tftp.c	78	GUARDED	nf_nat_tftp = rcu_dereference(nf_nat_tftp_hook);
+nf_nat_snmp_hook	net/netfilter/nf_conntrack_snmp.c	46	GUARDED	nf_nat_snmp = rcu_dereference(nf_nat_snmp_hook);
+nf_nat_irc_hook	net/netfilter/nf_conntrack_irc.c	212	GUARDED	nf_nat_irc = rcu_dereference(nf_nat_irc_hook);
+nf_nat_ftp_hook	net/netfilter/nf_conntrack_ftp.c	523	GUARDED	nf_nat_ftp = rcu_dereference(nf_nat_ftp_hook);
+nf_nat_amanda_hook	net/netfilter/nf_conntrack_amanda.c	155	GUARDED	nf_nat_amanda = rcu_dereference(nf_nat_amanda_hook);
+nf_nat_pptp_hook_outbound	net/netfilter/nf_conntrack_pptp.c	473	GUARDED	nf_nat_pptp_outbound = rcu_dereference(nf_nat_pptp_hook_outbound);
+nf_nat_pptp_hook_inbound	net/netfilter/nf_conntrack_pptp.c	377	GUARDED	nf_nat_pptp_inbound = rcu_dereference(nf_nat_pptp_hook_inbound);
+nf_nat_pptp_hook_exp_gre	net/netfilter/nf_conntrack_pptp.c	233	GUARDED	nf_nat_pptp_exp_gre = rcu_dereference(nf_nat_pptp_hook_exp_gre);
+nf_nat_pptp_hook_expectfn	net/netfilter/nf_conntrack_pptp.c	116	GUARDED	nf_nat_pptp_expectfn = rcu_dereference(nf_nat_pptp_hook_expectfn);
+nat_t120_hook	net/netfilter/nf_conntrack_h323_main.c	361	GUARDED	(nat_t120 = rcu_dereference(nat_t120_hook)) &&
+nat_h245_hook	net/netfilter/nf_conntrack_h323_main.c	698	GUARDED	(nat_h245 = rcu_dereference(nat_h245_hook)) &&
+nat_callforwarding_hook	net/netfilter/nf_conntrack_h323_main.c	826	GUARDED	(nat_callforwarding = rcu_dereference(nat_callforwarding_hook)) &&
+nat_q931_hook	net/netfilter/nf_conntrack_h323_main.c	1287	GUARDED	nat_q931 = rcu_dereference(nat_q931_hook);
+nat_rtp_rtcp_hook	net/netfilter/nf_conntrack_h323_main.c	302	GUARDED	(nat_rtp_rtcp = rcu_dereference(nat_rtp_rtcp_hook)) &&
+set_h225_addr_hook	net/netfilter/nf_conntrack_h323_main.c	868	GUARDED	set_h225_addr = rcu_dereference(set_h225_addr_hook);
+set_h225_addr_hook	net/netfilter/nf_conntrack_h323_main.c	1502	GUARDED	set_h225_addr = rcu_dereference(set_h225_addr_hook);
+set_ras_addr_hook	net/netfilter/nf_conntrack_h323_main.c	1317	GUARDED	set_ras_addr = rcu_dereference(set_ras_addr_hook);
+set_ras_addr_hook	net/netfilter/nf_conntrack_h323_main.c	1386	GUARDED	set_ras_addr = rcu_dereference(set_ras_addr_hook);
+set_ras_addr_hook	net/netfilter/nf_conntrack_h323_main.c	1590	GUARDED	set_ras_addr = rcu_dereference(set_ras_addr_hook);
+set_ras_addr_hook	net/netfilter/nf_conntrack_h323_main.c	1648	GUARDED	set_ras_addr = rcu_dereference(set_ras_addr_hook);
+set_sig_addr_hook	net/netfilter/nf_conntrack_h323_main.c	1418	GUARDED	set_sig_addr = rcu_dereference(set_sig_addr_hook);
+set_sig_addr_hook	net/netfilter/nf_conntrack_h323_main.c	1468	GUARDED	set_sig_addr = rcu_dereference(set_sig_addr_hook);
+set_sig_addr_hook	net/netfilter/nf_conntrack_h323_main.c	1553	GUARDED	set_sig_addr = rcu_dereference(set_sig_addr_hook);
+set_sig_addr_hook	net/netfilter/nf_conntrack_h323_main.c	1657	GUARDED	set_sig_addr = rcu_dereference(set_sig_addr_hook);
