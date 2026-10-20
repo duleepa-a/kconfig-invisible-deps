@@ -391,7 +391,8 @@ def run(cmd):
 
 
 SEC_HDR_RE = re.compile(
-    r'^\s*\[\s*(\d+)\]\s+(\S+)(?:\s+\S+\s+[0-9a-fA-F]+\s+[0-9a-fA-F]+\s+([0-9a-fA-F]+))?')
+    r'^\s*\[\s*(\d+)\]\s+(\S+)'
+    r'(?:\s+\S+\s+[0-9a-fA-F]+\s+[0-9a-fA-F]+\s+([0-9a-fA-F]+)\s+[0-9a-fA-F]+\s+([A-Za-z]*)\s*\d+\s+\d+\s+\d+)?')
 SYM_ROW_RE = re.compile(
     r'^\s*\d+:\s+([0-9a-fA-F]+)\s+(\d+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s*(.*)$'
 )
@@ -407,17 +408,19 @@ def is_x86_64(obj_path):
 
 def parse_object_symbols(obj_path):
     """Returns (symbols, section_sizes). symbols: list of {name, section,
-    size, bind, value} for OBJECT symbols defined (not UND) in this object,
+    size, bind, value, flags} for OBJECT symbols defined (not UND) in this object,
     local ones included. section_sizes: {section name: size}."""
     sec_out = run(['readelf', '-SW', obj_path])
     idx2name = {}
     sizes = {}
+    flags = {}
     for line in sec_out.splitlines():
         m = SEC_HDR_RE.match(line)
         if m:
             idx2name[int(m.group(1))] = m.group(2)
             if m.group(3):
                 sizes[m.group(2)] = max(sizes.get(m.group(2), 0), int(m.group(3), 16))
+                flags[m.group(2)] = ''.join(sorted(set(flags.get(m.group(2), '') + (m.group(4) or ''))))
 
     sym_out = run(['readelf', '-sW', obj_path])
     syms = []
@@ -443,6 +446,9 @@ def parse_object_symbols(obj_path):
         syms.append({
             'name': name, 'section': section, 'size': int(size),
             'bind': bind, 'value': int(value, 16),
+            # ELF section flags (W=writable, A=alloc, ...). COMMON has no
+            # section: it is writable by definition.
+            'flags': 'WA' if section == 'COMMON' else flags.get(section, ''),
         })
     return syms, sizes
 
@@ -461,8 +467,12 @@ class SymbolRanges(object):
 
     def __init__(self, symbols, section_sizes=None):
         self.sizes = section_sizes or {}
+        self.binds = {}
         self.by_sec = defaultdict(list)
         for s in symbols:
+            prev = self.binds.get(s['name'])
+            if prev is None or (prev != 'GLOBAL' and s['bind'] == 'GLOBAL'):
+                self.binds[s['name']] = s['bind']
             self.by_sec[s['section']].append((s['value'], s['size'], s['name'], s['bind']))
         self.values = {}
         self.max_end = {}
@@ -474,6 +484,13 @@ class SymbolRanges(object):
                 run_max = max(run_max, e[0] + e[1])
                 ends.append(run_max)
             self.max_end[sec] = ends
+
+    def bind_of(self, name):
+        """Linkage of `name` as seen from this object: LOCAL / GLOBAL / WEAK
+        when this object defines it as an OBJECT, else 'EXT' (resolved by
+        the linker across objects, or not an OBJECT). match.py uses this to
+        stop same-named statics in different files from being one symbol."""
+        return self.binds.get(name, 'EXT')
 
     def lookup(self, section, offset):
         """-> (name, symbol_value) or None."""
@@ -550,7 +567,50 @@ def _mk_ref(sym, obj_rel, func, section, access, rtype, insn, off, field):
         'access': access, 'reloc_type': rtype, 'src_file': insn['src_file'],
         'src_line': insn['src_line'], 'insn': insn['raw'],
         'addr': '%x' % insn['addr'], 'off': off, 'field': field,
+        'sym_bind': '', 'guard': '',
     }
+
+
+def _loaded_value_tested(insns, i, targets, limit=12):
+    """True when insns[i] loads the global into a register and, in the
+    straight-line code that follows, that register is tested against zero
+    and a conditional jump consumes the result:
+
+        mov g(%rip),%rax ; test %rax,%rax ; je ...
+        mov g(%rip),%rax ; cmp $0x0,%rax  ; jne ...
+
+    This is the common NULL-check-on-a-hook-pointer shape, and it catches
+    the 'copy to a local, then check the local' case that a compare against
+    the global itself cannot. It is evidence, not proof: it does not show
+    the check dominates the use (that needs a CFG), so it stops at branch
+    targets, calls, jumps and any redefinition of the register."""
+    mn, ops_s, _ = strip_prefixes(insns[i]['mnemonic'], insns[i]['ops'])
+    ops = split_operands(ops_s)
+    if len(ops) != 2 or not mn.lower().startswith('mov') or not is_mem_operand(ops[0]):
+        return False
+    fam = reg_family(ops[1])
+    if fam is None:
+        return False
+    for j in range(i + 1, min(i + 1 + limit, len(insns))):
+        nxt = insns[j]
+        if nxt['addr'] in targets:
+            return False
+        mn2, o2, _ = strip_prefixes(nxt['mnemonic'], nxt['ops'])
+        m2 = mn2.lower()
+        st = lookup_stem(m2)
+        ops2 = split_operands(o2)
+        zero_test = (
+            (st == 'test' and len(ops2) == 2 and reg_family(ops2[0]) == fam
+             and reg_family(ops2[1]) == fam) or
+            (st == 'cmp' and len(ops2) == 2 and is_imm_operand(ops2[0])
+             and parse_int(ops2[0]) == 0 and reg_family(ops2[1]) == fam))
+        if zero_test:
+            return j + 1 < len(insns) and bool(JCC_RE.match(insns[j + 1]['mnemonic'].lower()))
+        if is_branch(m2) or st == 'ret' or st in CLOBBER_ALL_STEMS:
+            return False
+        if ops2 and reg_family(ops2[-1]) == fam and st not in NO_REG_WRITE_STEMS:
+            return False
+    return False
 
 
 def refs_for_function(insns, obj_rel, func, section, resolver=None, fieldfn=None):
@@ -570,7 +630,7 @@ def refs_for_function(insns, obj_rel, func, section, resolver=None, fieldfn=None
 
     state = {}   # register family -> (sym, off)
 
-    for ins in insns:
+    for i, ins in enumerate(insns):
         if ins['addr'] in targets:
             state.clear()
         mn, ops_s, _ = strip_prefixes(ins['mnemonic'], ins['ops'])
@@ -595,7 +655,12 @@ def refs_for_function(insns, obj_rel, func, section, resolver=None, fieldfn=None
             if access == 'UNKNOWN':
                 unclassified.append('%s\t%s\t%s\t%s' % (obj_rel, func, ins['mnemonic'], ins['raw']))
             field = fieldfn(sym, off) if (fieldfn and access != 'CALL') else ''
-            refs.append(_mk_ref(sym, obj_rel, func, section, access, rel['rtype'], ins, off, field))
+            ref = _mk_ref(sym, obj_rel, func, section, access, rel['rtype'], ins, off, field)
+            if access == 'LOAD_GUARD':
+                ref['guard'] = 'cmp_mem'
+            elif access == 'LOAD' and role == 'mem' and _loaded_value_tested(insns, i, targets):
+                ref['guard'] = 'reg_test'
+            refs.append(ref)
             resolved.append((role, sym, off))
 
         have_mem_reloc = any(r[0] == 'mem' for r in resolved)
@@ -733,6 +798,9 @@ def parse_text_refs(obj_path, obj_rel, resolver=None, fieldfn=None):
             })
             continue
     flush()
+    if resolver is not None:
+        for r in refs:
+            r['sym_bind'] = resolver.bind_of(r['sym'])
     return refs, unclassified, n_dropped
 
 
@@ -784,6 +852,7 @@ def parse_data_refs(obj_path, obj_rel, resolver, fieldfn=None):
             'func_section': sec, 'access': 'DATAREF', 'reloc_type': reloc_type,
             'src_file': '', 'src_line': 0, 'insn': '',
             'addr': '%x' % offset, 'off': toff, 'field': field,
+            'sym_bind': resolver.bind_of(sym) if resolver else '', 'guard': '',
         })
     return refs, n_dropped
 
@@ -974,6 +1043,35 @@ def self_test():
     check('tracking reset at branch target',
           [x['access'] for x in r if x['access'].startswith('IND_')] == ['IND_STORE'])
 
+    # loaded-value NULL test (hook-pointer pattern) vs. no test
+    insns = [
+        _mk_insn(0, 7, 'mov', '0x0(%rip),%rax', [(3, 'R_X86_64_PC32', 'hook-0x4')]),
+        _mk_insn(7, 3, 'test', '%rax,%rax'),
+        _mk_insn(10, 2, 'je', '20 <f+0x20>'),
+    ]
+    r, _, _ = refs_for_function(insns, 'x.o', 'f', '.text')
+    check('reg_test guard', r[0]['guard'] == 'reg_test' and r[0]['access'] == 'LOAD')
+    insns = [
+        _mk_insn(0, 7, 'mov', '0x0(%rip),%rax', [(3, 'R_X86_64_PC32', 'hook-0x4')]),
+        _mk_insn(7, 3, 'mov', '%rdx,%rax'),
+        _mk_insn(10, 3, 'test', '%rax,%rax'),
+        _mk_insn(13, 2, 'je', '20 <f+0x20>'),
+    ]
+    r, _, _ = refs_for_function(insns, 'x.o', 'f', '.text')
+    check('reg_test killed by redefinition', r[0]['guard'] == '')
+    r, _, _ = refs_for_function(
+        [_mk_insn(0, 7, 'cmpl', '$0x0,0x0(%rip)', [(2, 'R_X86_64_PC32', 'g-0x5')])], 'x.o', 'f', '.text')
+    check('cmp_mem guard', r[0]['guard'] == 'cmp_mem')
+
+    # linkage lookup and readelf section-header parsing (flags)
+    check('bind_of', resolver.bind_of('arr') == 'GLOBAL' and resolver.bind_of('cnt') == 'LOCAL'
+          and resolver.bind_of('nosuch') == 'EXT')
+    m1 = SEC_HDR_RE.match('  [ 5] .data..read_mostly PROGBITS 0000000000000000 000100 000010 00  WA  0   0 32')
+    m2 = SEC_HDR_RE.match('  [ 6] .rodata          PROGBITS 0000000000000000 000200 000020 00   A  0   0 32')
+    m3 = SEC_HDR_RE.match('  [ 7] .foo             PROGBITS 0000000000000000 000300 000020 00      0   0  1')
+    check('section flags', m1 and m1.group(4) == 'WA' and m2 and m2.group(4) == 'A'
+          and m3 and m3.group(4) == '' and int(m1.group(3), 16) == 16)
+
     print('class                      tp  fp  fn  precision  recall')
     for cls in sorted(stats):
         tp, fp, fn = stats[cls]
@@ -994,7 +1092,8 @@ def self_test():
 # --------------------------------------------------------------------
 
 XREF_FIELDS = ['sym', 'obj', 'func', 'func_section', 'access', 'reloc_type',
-               'src_file', 'src_line', 'insn', 'addr', 'off', 'field']
+               'src_file', 'src_line', 'insn', 'addr', 'off', 'field',
+               'sym_bind', 'guard']
 
 
 def main():
@@ -1033,7 +1132,7 @@ def main():
     xref_f = open(os.path.join(args.out, 'xref.tsv'), 'w')
     unclass_f = open(os.path.join(args.out, 'unclassified.txt'), 'w')
 
-    globals_f.write('sym\tobj\tsection\tsize\tbind\n')
+    globals_f.write('sym\tobj\tsection\tsize\tbind\tvalue\tsec_flags\n')
     xref_f.write('\t'.join(XREF_FIELDS) + '\n')
 
     n_syms = 0
@@ -1051,7 +1150,8 @@ def main():
             continue
         syms, sec_sizes = parse_object_symbols(obj)
         for s in syms:
-            globals_f.write(f"{s['name']}\t{obj_rel}\t{s['section']}\t{s['size']}\t{s['bind']}\n")
+            globals_f.write(f"{s['name']}\t{obj_rel}\t{s['section']}\t{s['size']}\t{s['bind']}"
+                            f"\t{s['value']}\t{s['flags']}\n")
             n_syms += 1
         resolver = SymbolRanges(syms, sec_sizes)
 
