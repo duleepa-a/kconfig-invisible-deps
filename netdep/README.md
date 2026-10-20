@@ -605,8 +605,15 @@ A complete reference run, with hashes and the exact commands, is in `results/run
 
 Read these before drawing conclusions. Limits of the ELF extraction step (`netdep.py`) and their status are in
 [LIMITATIONS.md](LIMITATIONS.md). Optional extraction/filter flags: `netdep.py --dwarf-fields` (struct-field
-column), `netdep.py --self-test`, `match.py --include-indirect`, `match.py --field-sensitive`. `xref.tsv` now also
-has `addr`, `off`, `field` columns.
+column), `netdep.py --self-test`, `match.py --include-indirect`, `match.py --field-sensitive`,
+`match.py --dotconfig FILE` (real y/m/n values for F9), `match.py --ifdef-guards` (add `#ifdef` conditions).
+`xref.tsv` also has `addr`, `off`, `field`, `sym_bind`, `guard`; `globals.tsv` has `value`, `sec_flags`.
+
+`match.py` now matches symbols by linkage and defining object, not by bare name, and writes one row per
+(symbol, writer function, reader function). **The numbers in section 9 come from the earlier name-based matching:**
+re-extract with the current `netdep.py` and add `--legacy` to `match.py` to reproduce them. F6-F9 are ranking
+features, not validation; `score_validation.py` compares them with the manual verdicts. After `match.py`, run
+`kconfig_sep.py --root <tree> --candidates candidates.tsv --out verdicts.tsv` for the Kconfig-solver check of F5.
 
 * The tools list **structural possibilities** (a writer and a reader that a build configuration could separate).
   They do not show that any of them fails at run time.
