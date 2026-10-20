@@ -1,0 +1,31 @@
+=== MODULAR IPV6 DISABLED CONTROLLED WITNESS ===
+=== LOADING IPV6 PROVIDER WITH disable=1 ===
+IPv6: Loaded, but administratively disabled, reboot required to enable
+=== MODULE STATE ===
+br_netfilter (loaded)
+bridge (loaded)
+stp (loaded)
+llc (loaded)
+ipv6 (loaded)
+ipv6 module parameter disable=1
+=== INJECTING IPV6 FRAME ===
+br_nf test: IPv6 bridge PRE_ROUTING reached
+br_nf test: forcing IPv6 destination-change branch
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
+Oops: 0000 [#1] SMP NOPTI
+RIP: 0010:br_nf_pre_routing_finish_ipv6+0xaa/0x1f0 [br_netfilter]
+CR2: 0000000000000008
+Call Trace:
+  br_nf_pre_routing_ipv6
+  br_nf_pre_routing
+  nf_hook_slow
+  br_handle_frame
+  __netif_receive_skb_core
+  process_backlog
+  net_rx_action
+  packet_sendmsg
+  __sys_sendto
+  __x64_sys_sendto
+Modules linked in: br_netfilter(E) bridge(E) stp(E) llc(E) ipv6(E)
+Kernel panic - not syncing: Fatal exception in interrupt
+Rebooting in 1 seconds..

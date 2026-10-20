@@ -1,0 +1,32 @@
+#!/bin/sh
+set -x
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
+mkdir -p /lib/modules
+echo === MODULAR IPV6 DISABLED CONTROLLED WITNESS ===
+cat /proc/cmdline
+insmod /lib/modules/ipv6.ko disable=1
+insmod /lib/modules/llc.ko
+insmod /lib/modules/stp.ko
+insmod /lib/modules/bridge.ko
+insmod /lib/modules/br_netfilter.ko test_force_daddr_change=1
+echo === MODULE STATE ===
+cat /proc/modules
+cat /sys/module/ipv6/parameters/disable
+echo === BRIDGE SETUP ===
+ip link add brtest type bridge || exit 10
+ip link add vethA type veth peer vethB || exit 11
+brctl addif brtest vethA || exit 12
+brctl addif brtest veth0 || exit 13
+ip link set dev brtest up || exit 14
+ip link set dev vethA up || exit 15
+ip link set dev veth0 up || exit 16
+sysctl -w net.bridge.bridge-nf-call-ip6tables=1
+echo === INJECTING IPV6 FRAME ===
+/send_ipv6 veth0 2001:db8::10 2001:db8::1 || exit 17
+sleep 2
+echo === AFTER INJECTION: NO CRASH ===
+dmesg | tail -160
+poweroff -f
+sleep 5

@@ -1,0 +1,1222 @@
+\documentclass[12pt, a4paper, oneside]{book}
+
+% ─── Packages ───────────────────────────────────────────────────────────────
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+% \usepackage[utf8]{inputenc} % Removed (not needed in modern LaTeX)
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{xcolor}
+\usepackage{mdframed}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{pgfgantt}
+\usepackage{rotating}
+
+% ─── Colours ────────────────────────────────────────────────────────────────
+\definecolor{darkblue}{RGB}{31, 78, 121}
+\definecolor{midblue}{RGB}{46, 117, 182}
+\definecolor{lightblue}{RGB}{235, 243, 251}
+\definecolor{quoteblue}{RGB}{68, 68, 68}
+\definecolor{warnorange}{RGB}{197, 90, 17}
+\definecolor{successgreen}{RGB}{31, 120, 31}
+
+% ─── Hyperref ───────────────────────────────────────────────────────────────
+\hypersetup{
+    linkcolor=darkblue,
+    pdftitle={FYP Interim Report},
+}
+
+% ─── Spacing ────────────────────────────────────────────────────────────────
+\onehalfspacing
+
+% ─── Section formatting ─────────────────────────────────────────────────────
+\titleformat{\chapter}[display]
+  {\bfseries}
+  {\Large\chaptertitlename\ \thechapter}{0.5em}{\Huge}
+
+\titleformat{\section}
+  {\Large\bfseries}
+  {\thesection.}{0.5em}{}
+
+\titleformat{\subsection}
+  {\large\bfseries}
+  {\thesubsection}{0.5em}{}
+
+\titleformat{\subsubsection}
+  {\normalsize\bfseries}
+  {\thesubsubsection}{0.5em}{}
+
+\titlespacing*{\chapter}{0pt}{0pt}{16pt}
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ─── Header / Footer ────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textbf{Final Year Research Interim Report}}
+\fancyfoot[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ─── Environments ───────────────────────────────────────────────────────────
+\newmdenv[
+  topline=false, bottomline=false, rightline=false,
+  linewidth=3pt, innerleftmargin=12pt, innerrightmargin=12pt,
+  innertopmargin=8pt, innerbottommargin=8pt,
+  skipabove=10pt, skipbelow=10pt,
+]{quotebox}
+
+\newmdenv[
+  linewidth=1.5pt, innerleftmargin=14pt, innerrightmargin=14pt,
+  innertopmargin=10pt, innerbottommargin=10pt,
+  skipabove=10pt, skipbelow=10pt, roundcorner=4pt,
+]{rqbox}
+
+\newmdenv[
+  linewidth=1.5pt, linecolor=warnorange,
+  backgroundcolor=orange!5,
+  innerleftmargin=14pt, innerrightmargin=14pt,
+  innertopmargin=10pt, innerbottommargin=10pt,
+  skipabove=10pt, skipbelow=10pt, roundcorner=4pt,
+]{limitbox}
+
+% ─── Column types ───────────────────────────────────────────────────────────
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% ─── Bibliography ───────────────────────────────────────────────────────────
+\bibliographystyle{apalike}
+\setcitestyle{authoryear, open={(}, close={)}}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\begin{document}
+\frontmatter
+\pagenumbering{roman}
+
+
+% ─── Title page ─────────────────────────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{1.5cm}
+
+  \rule{\linewidth}{1.5pt}\\[0.4cm]
+  {\LARGE\bfseries
+    Detecting Undocumented Non-Functional Dependencies\\[0.3cm]
+    in Bloated Linux Kernels Using Static Analysis
+  }\\[0.4cm]
+  \rule{\linewidth}{1.5pt}
+
+  \vspace{1.5cm}
+  {\large\bfseries Interim Report}\\[0.5cm]
+
+  \vspace{2cm}
+  \begin{tabular}{rl}
+    \textbf{Student Name:}   & E.A.D.D. Anjana           \\[0.3cm]
+    \textbf{Index No:}     &   22000135        \\[0.3cm]
+    \textbf{Registration No:}  & 2022/CS/013                     \\[0.3cm]
+    \textbf{Supervisor:}     & Dr. Chamath Keppitiyagama           \\[0.3cm]
+    \textbf{Co-Supervisor:}     & Dr. Tharindu Wijethilake           \\[0.3cm]
+  \end{tabular}
+
+  \vfill
+\end{titlepage}
+
+% ─────────────────────────────────────────────────────────────────────────────
+% SECTION II: SIGNATURES
+% ─────────────────────────────────────────────────────────────────────────────
+\newpage
+\thispagestyle{fancy}
+
+{\large\bfseries Declaration}\\[4pt]
+I declare that this interim report is my own original work carried out for the SCS4224 Final Year Research Project at the University of Colombo School of Computing. All sources consulted have been duly acknowledged in accordance with the University's academic integrity policy.
+
+\vspace{2.5cm}
+\begin{tabularx}{\textwidth}{X X}
+\dotfill & \dotfill \\[3pt]
+\textbf{Mr. E.A.D.D.\ Anjana} & \textbf{Date} \\[3cm]
+
+\dotfill & \dotfill \\[3pt]
+\textbf{Dr.\ Chamath Keppitiyagama} & \textbf{Date} \\
+Supervisor & \\[3cm]
+
+\dotfill & \dotfill \\[3pt]
+\textbf{Dr.\ Tharindu Wijethilake} & \textbf{Date} \\
+Co-Supervisor & \\
+\end{tabularx}
+
+\newpage
+
+% ─────────────────────────────────────────────────────────────────────────────
+% SECTION III: TABLE OF CONTENTS
+% ─────────────────────────────────────────────────────────────────────────────
+\tableofcontents
+\newpage
+
+% ─────────────────────────────────────────────────────────────────────────────
+% LIST OF FIGURES
+% ─────────────────────────────────────────────────────────────────────────────
+\listoffigures
+\newpage
+
+% ─────────────────────────────────────────────────────────────────────────────
+% LIST OF TABLES
+% ─────────────────────────────────────────────────────────────────────────────
+\listoftables
+\newpage
+
+% ─────────────────────────────────────────────────────────────────────────────
+% LIST OF ACRONYMS
+% ─────────────────────────────────────────────────────────────────────────────
+\chapter*{List of Acronyms}
+\addcontentsline{toc}{chapter}{List of Acronyms}
+\markboth{List of Acronyms}{List of Acronyms}
+
+\begin{tabularx}{\textwidth}{L{3cm} X}
+\toprule
+\textbf{Acronym} & \textbf{Expansion} \\
+\midrule
+AST    & Abstract Syntax Tree \\
+CPU    & Central Processing Unit \\
+ELF    & Executable and Linkable Format \\
+FYP    & Final Year Project \\
+GB     & Gigabyte \\
+GCC    & GNU Compiler Collection \\
+IPv6   & Internet Protocol version 6 \\
+LLVM   & Low Level Virtual Machine (compiler infrastructure) \\
+LTP    & Linux Test Project \\
+OS     & Operating System \\
+QEMU   & Quick Emulator \\
+RAM    & Random Access Memory \\
+RQ     & Research Question \\
+\bottomrule
+\end{tabularx}
+
+\newpage
+\mainmatter
+\pagenumbering{arabic}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% SECTION IV: INTRODUCTION, MOTIVATION, AIMS AND OBJECTIVES
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Introduction, Motivation, Aims and Objectives}
+
+\section{Introduction}
+
+The Linux kernel is the core software layer between applications and hardware
+in the vast majority of cloud servers, mobile devices, and embedded systems
+worldwide. Decades of growth have caused the kernel to exceed 36 million lines
+of code with over 19,000 configuration options \citep{gunasekaran2025lean},
+yet most individual deployments use only 5-10\% of this code. A cloud server
+running a web application has no need for Bluetooth drivers, USB audio support,
+or amateur radio protocols, yet all of this code is compiled and loaded by default.
+
+This unnecessary code termed \textit{kernel bloat} carries measurable
+consequences. It enlarges the attack surface available to adversaries, increases
+memory usage, and prolongs system boot time. \citet{gunasekaran2025lean}
+demonstrate that even after state-of-the-art automated debloating, 79--86\% of
+kernel code remains unused at runtime, confirming that bloat is a persistent and
+largely unresolved problem.
+
+\textit{Kernel debloating} is the systematic process of identifying and removing
+unnecessary kernel code, retaining only what is required for target applications.
+The state-of-the-art automated debloating framework, Cozart \citep{kuo2020cozart},
+achieves over 80\% kernel size reduction through dynamic tracing of application
+workloads. Despite this, automated debloating remains rarely adopted in production.
+Cloud providers including Amazon AWS, Microsoft Azure, and Google Cloud continue
+to debloat kernels manually and ad hoc \citep{kuo2020cozart}, exposing their
+infrastructure to the very risks debloating is designed to address.
+
+\section{Motivation}
+
+The root cause of this limited adoption is an explicitly identified and completely
+unresolved safety limitation in all existing kernel debloating tools, stated in
+the doctoral dissertation behind Cozart \citep{kuo2022dissertation}:
+
+"The debloating techniques used by all studies in this thesis do not
+consider non-functional properties that could lead to heisenbugs. An example of
+a heisenbug could be a kernel module that initialises a variable used by another
+kernel module and this dependency is not specified."
+
+A \textit{heisenbug} is a defect that manifests unpredictably in production and
+disappears when examined making it extremely difficult to diagnose. In the
+debloating context it arises from \textbf{undocumented non-functional
+dependencies}: runtime relationships where one kernel module initialises shared
+state that another module silently depends upon, yet this relationship is not
+recorded anywhere in the kernel's KConfig configuration system and is invisible
+to dynamic tracing.
+
+\citet{gunasekaran2025lean} further confirm in 2025
+that dynamic debloating tools capture what \textit{executed} rather than what is
+\textit{functionally essential} which is a fundamental limitation that directly
+enables this class of hidden dependency to persist undetected. No existing tool
+addresses this problem in the debloating context.
+
+Importantly, the problem is not confined to any single debloating tool. The
+dependency exists in the kernel source itself: a configuration that disables the
+option gating the writer while keeping the option gating the reader produces the
+same uninitialised state, whether that configuration was produced by a debloating
+tool, by a distribution maintainer, or by hand. This research therefore studies
+the dependency as a property of the kernel, and treats debloating as the setting
+in which it becomes dangerous.
+
+\section{Revised Aims and Objectives}
+
+\textbf{Research Aim:} To determine whether static analysis of compiled kernel
+code can detect undocumented non-functional dependencies on global variables
+between Linux kernel compilation units, to demonstrate that such dependencies
+occur in configurations KConfig permits, and to show that a safety check built
+on this analysis can reject a configuration that would ship one.
+
+\noindent\textbf{Objectives:}
+
+\begin{enumerate}[leftmargin=*, label=\textbf{O\arabic*.}]
+
+  \item Extract, from the compiled objects of a configured kernel, every global
+        variable together with the compilation units that write it and the
+        compilation units in \texttt{net} that read it, covering both writes
+        performed during \texttt{\_\_init} (boot writers) and writes performed
+        by ordinary code at run time (lazy writers).
+
+  \item Filter these writer/reader pairs using the build conditions that gate
+        each compilation unit, retaining only those pairs that a configuration
+        could separate, that is, pairs where the writer can be removed while the
+        reader and the variable's definition remain.
+
+  \item Establish, for a candidate from O2, that the dependency is
+        real by constructing a configuration KConfig permits, building it, and
+        recording the observed runtime outcome.
+
+  \item Classify the readers of the retained candidates by whether a test of the
+        variable dominates its use, using a Clang/LLVM AST analysis applied to
+        the shortlist produced by O2.
+
+  \item Design a build-time safety check that consumes the output of O4 and
+        rejects a removal set containing a writer whose reader is unguarded.
+\end{enumerate}
+
+\section{Changes Since the Proposal}
+
+The proposal defence raised three points, each of which has been addressed.
+
+\begin{table}[H]
+\centering
+\caption{Panel feedback and the resulting changes.}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{L{4.6cm} L{8.2cm}}
+\toprule
+\textbf{Feedback} & \textbf{Change made} \\
+\midrule
+A manually curated ground truth is not a sound basis for evaluation &
+  The evaluation no longer rests on a dataset built by the author. It is
+  restated as a precision and existence claim. \\
+\addlinespace
+The scope is too broad &
+  Reduced from two dependency types to one (writes to global variables,
+  including function-pointer registrations), and from two subsystems to one
+  (\texttt{net} readers). \\
+\addlinespace
+The research question should not be framed around a single tool &
+  The research questions now concern the dependency as a property of the kernel.
+  Debloating is the motivating application, not the boundary of the question. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% SECTION V: LITERATURE REVIEW AND RESEARCH GAP
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Literature Review and Research Gap}
+
+\section{Kernel Debloating: State of the Art}
+
+Configuration-based kernel tailoring was established by \citet{kurmus2013attack},
+who reduced attack surface by deriving a kernel configuration from traced
+workloads, and its limits were examined by \citet{alharthi2018effectiveness},
+who showed that compile-time configuration alone leaves substantial unused code.
+
+\textbf{Cozart} \citep{kuo2020cozart, kuo2022cacm} is the state-of-the-art
+automated framework --- a \textit{dynamic} tool that runs the kernel in QEMU,
+traces executed code, and assembles a minimised kernel achieving 80\% size
+reduction with 13\% boot time improvement. However, dynamic tracing creates a
+fundamental blind spot: it cannot observe dependencies between a removed module
+and a retained one, because the dependency only manifests when the removed
+module is absent.
+
+More recent work addresses related but distinct problems. \textbf{SHARD}
+\citep{abubakar2021shard} enforces fine-grained control-flow integrity at runtime.
+\textbf{Hacksaw} \citep{hu2023hacksaw} debloats based on hardware device inventory,
+but explicitly ignores indirect dependencies through shared data and function
+pointers to avoid false removals, precisely the class this research targets.
+\citet{gunasekaran2025lean} improve over Cozart by up to 22\%, yet confirm that
+79--86\% of kernel code remains unused post-debloating because dynamic traces
+capture \textit{what executed}, not \textit{what is functionally essential}. A
+2024 comparative evaluation of ten debloating tools found only 13\% produce sound
+programs \citep{brown2024broad}; a systematic field review identifies dependency
+detection as an open challenge \citep{alhanahnah2024sok}.
+
+\section{Configuration Dependencies and Static Analysis}
+
+The KConfig language is an unreliable dependency source. \citet{elsharkawy2015kconfig}
+analyse its semantics and show that its behaviour is sufficiently intricate that
+independent analysis tools disagree on the meaning of the same specification.
+\citet{gunasekaran2025lean} likewise find many undocumented special cases,
+confirming that analysis of the C source and the build system is required rather
+than relying on configuration files alone.
+
+\citet{chen2020cdep} demonstrate that static taint analysis can discover
+undocumented configuration parameter dependencies in Java systems with 87.9\%
+recall and a 6.0\% false positive rate, and this work is the methodological
+inspiration for the present research. However, cDep targets Java \textit{parameter
+value} dependencies; this research targets C kernel \textit{runtime state}
+dependencies, where the consequence of a missed dependency is uninitialised
+memory rather than a misconfigured value.
+
+Static analysis of Linux kernel C code is well established in kernel development
+practice. \citet{zhai2020ubitect} detect use-before-initialisation bugs using
+flow-sensitive analysis, validating static initialisation dependency detection in
+kernel C. \citet{zhang2021taint} discover taint-style vulnerabilities in OS
+kernels at scale. \citet{chen2024syzgen} demonstrate that automated dependency
+inference via global data container patterns uncovers dependencies overlooked by
+experts, directly supporting the feasibility of the approach taken here. Most
+critically, \citet{hao2022demystifying} show that implicit dependencies from
+module initialisation through global memory account for 59--88\% of uncovered
+kernel branches, and independently propose static analysis as the detection
+approach, confirming both the prevalence of the phenomenon and the
+appropriateness of the method.
+
+\section{Identified Research Gap}
+
+\textbf{The Research Gap:} Existing debloating tools reason about what a workload
+executed. Existing configuration tools reason about the dependencies that KConfig
+declares. Neither reasons about a writer whose option a configuration removes and
+a reader whose option it keeps, where no declared rule links the two. The author
+of Cozart identifies exactly this case as an unresolved limitation
+\citep{kuo2022dissertation}, and the surrounding literature corroborates it:
+\citet{hao2022demystifying} confirm that implicit dependencies from module
+initialisation are prevalent; \citet{gunasekaran2025lean} confirm that dynamic
+tracing captures what executed rather than what is functionally essential;
+\citet{brown2024broad} show that only 13\% of debloating attempts across ten
+tools produce sound programs; and \citet{alhanahnah2024sok} identify dependency
+identification as an open challenge for the field.
+
+The gap is structural, not incidental. A dynamic approach can only observe
+dependencies between components that are both present during the trace. A
+dependency between a removed component and a retained one manifests only when the
+removed component is absent, which by definition does not occur during tracing.
+Only static analysis can reason about code that is not there.
+
+\section{The Dependency Pattern}
+
+The pattern this research targets has three parts: a global variable, a write to
+it from one compilation unit, and a read of it from another, where the build
+conditions of the two units differ and no KConfig rule links them.
+
+\subsection*{Pattern 1 - Shared variable initialisation}
+
+\begin{verbatim}
+/* mm/slab.c -- Module A */
+void kmem_cache_init(void) {
+    global_cache = kmem_cache_create(...);
+}
+/* fs/ext4/super.c -- Module B */
+void ext4_init_cache(void) {
+    ext4_inode_cachep = global_cache;   /* depends on Module A */
+}
+\end{verbatim}
+
+Module~A writes the global variable \texttt{global\_cache} during initialisation,
+and Module~B reads it. If the option gating Module~A is not enabled while the
+option gating Module~B is, Module~B copies a variable that was never set. The
+variable itself is defined in a unit other than Module~A, so removing Module~A
+does not remove the symbol. The build links successfully and the fault appears
+only at run time.
+
+\subsection*{Pattern 2 - Function pointer registration}
+
+\begin{verbatim}
+/* Unit A registers a handler into a shared pointer or ops table */
+static int __init a_init(void) {
+    kernel_ops = &a_handlers;
+}
+/* Unit B dispatches through it */
+void b_work(void) {
+    kernel_ops->do_something(data);   /* NULL if A is absent */
+}
+\end{verbatim}
+
+Unit B never names unit A. The dependency exists only through the shared pointer.
+This is the form most relevant to \texttt{net}, where subsystems commonly publish
+their entry points through registered operation tables, and it is related to the
+taint-style dependencies studied by \citet{zhang2021taint}.
+
+
+% ══════════════════════════════════════════════════════════════════════════════
+% SECTION VI: RESEARCH QUESTIONS
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Research Questions, Significance and Scope}
+
+\section{Revised Research Questions}
+
+\textbf{RQ1.} Can static analysis of compiled kernel objects, combined with the
+build conditions that gate each object, detect undocumented non-functional
+dependencies on global variables, where a configuration may remove the writer
+while retaining the reader?
+
+\vspace{6pt}
+\textbf{RQ2.} Can an AST-level guard analysis over the resulting candidates
+support a build-time safety check that rejects a configuration in which an
+unguarded reader is retained without its writer?
+
+RQ1 concerns detection and is addressed by the work reported in
+Section~\ref{sec:results}. RQ2 concerns prevention; its design is given in
+Section~\ref{sec:method} and its implementation is remaining work.
+
+\section{Justification of Significance}
+
+\textbf{(a) Grounded in an admitted peer-reviewed gap.} \citet{kuo2022dissertation}
+classifies this as an \textit{essential} limitation, one that cannot be fixed by
+improving the implementation, and explicitly calls for future research to address it.
+
+\textbf{(b) Independently validated.} \citet{hao2022demystifying} confirm that
+implicit dependencies from module initialisation through global memory affect
+59--88\% of kernel branches. \citet{brown2024broad} show only 13\% of debloating
+attempts produce sound programs. \citet{alhanahnah2024sok} identify this as an
+open field-wide challenge.
+
+\textbf{(c) Applicable beyond one tool.} Because the dependency is a property of
+the kernel source and its build system, a detection method is applicable to any
+configuration process, not only to the traces published with one debloating
+framework.
+
+\textbf{(d) Tractable.} The scope is deliberately narrowed to one dependency
+type, one subsystem and one kernel version, making the work completable within
+one academic year.
+
+\section{Scope and Delimitations}
+
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item \textbf{Kernel version:} Linux 4.18 (Ubuntu cosmic). This version is used because the configuration sets and build infrastructure available for this study
+        target the 4.18 tree, and the method depends on the structure of
+        the build system rather than on a particular release.
+  \item \textbf{Dependency type:} writes to global variables, including
+        function-pointer registrations. Both boot-time (\texttt{\_\_init}) and
+        run-time writers are covered.
+  \item \textbf{Reader subsystem:} \texttt{net} only. Writers and variable
+        definitions are drawn from \texttt{net}, \texttt{kernel}, \texttt{mm}
+        and \texttt{lib}.
+  \item \textbf{Analysis approach:} object-file analysis for candidate
+        generation, Clang/LLVM AST analysis for guard classification on the
+        resulting shortlist.
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{Delimitations with justifications.}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{L{4cm} L{8.5cm}}
+\toprule
+\textbf{Delimitation} & \textbf{Justification} \\
+\midrule
+One dependency type only &
+  Narrowed from the proposal on the panel's advice. Notification chains, mutex
+  initialisation and initialisation-ordering dependencies require different
+  analyses and are identified as future work. \\
+\addlinespace
+One reader subsystem (\texttt{net}) &
+  Full kernel analysis is impractical for one researcher in one year.
+  \texttt{net} is a cohesive subsystem that makes heavy use of registered
+  operation tables, the form most relevant to this dependency type. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% SECTION VII: METHODOLOGY
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Research Approach and Methodology}
+\label{sec:method}
+
+\section{Overview}
+
+The method has four stages. Stages 1 and 2 are implemented and have produced the
+results in Section~\ref{sec:results}. Stage 3 is designed and is the immediate
+next implementation step. Stage 4 is designed and is remaining work.
+
+\begin{table}[H]
+\centering
+\caption{Analysis stages and their status.}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{C{1.4cm} L{6.6cm} L{4.6cm}}
+\toprule
+\textbf{Stage} & \textbf{Function} & \textbf{Status} \\
+\midrule
+1 & Extract global variables and their reference sites from compiled objects
+  & Implemented \\
+2 & Filter writer/reader pairs by build condition
+  & Implemented \\
+3 & Classify readers as guarded or unguarded (Clang AST)
+  & Designed, not implemented \\
+4 & Build-time safety check consuming Stage 3 output
+  & Designed, not implemented \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Why Object-File Analysis Precedes Clang}
+
+The proposal specified Clang/LLVM AST analysis as the single analysis technique.
+During implementation this was revised into a two-stage design, for two reasons.
+
+First, cost. A Clang pass over the full kernel requires per-file compilation
+flags and a successful parse of every translation unit under the target
+configuration, which is substantial work for a kernel of this age whose source is
+written for GCC. In a trial, a Clang release contemporary with this kernel could
+not parse its headers, and a newer release parsed the files tried only after the
+options specific to GCC had been removed from each file's build command. A
+whole-subsystem pass therefore needs the build commands adapted file by file
+before any analysis can run. Object-file analysis requires only a completed build
+and standard binary utilities, and it processes the whole subsystem in minutes.
+
+Second, fidelity. Object files describe the kernel that the configuration
+actually produced. The build system has already resolved which units are
+compiled, and the relocations in each object record precisely which global each
+instruction references.
+
+The limitation of object-file analysis is that it cannot reliably recognise a
+guard: a conditional test present in the source may be compiled into a register
+comparison that the binary-level view cannot attribute to the variable. Guard
+recognition is therefore deferred to Stage 3, where Clang examines the source of
+the small number of readers that survive Stage 2. The two stages are complementary:
+the cheap analysis reduces the population, and the expensive analysis is applied
+only where it is needed.
+
+\section{Stage 1 - Extraction}
+
+For every object file in the built subtree, the symbol table is read to record
+each defined global variable with its section and size, and the disassembly with
+relocations is read to record every instruction that references such a variable.
+Each reference is classified by the form of the instruction as a read, a write, a
+read-modify-write, an address-taken reference, or a reference from static data.
+The enclosing function and its ELF section are recorded, which distinguishes
+writers executing during boot (\texttt{.init.text}) from writers executing at run
+time. Source file and line are recovered from debugging information.
+
+\section{Stage 2 - Filtering}
+
+Candidate pairs are selected by the following filters, applied in order. The
+build condition of a compilation unit is computed by resolving the Kbuild
+Makefile hierarchy from the unit's directory upwards, so that conditions
+contributed by a parent directory and by membership of a composite module are
+combined.
+
+\begin{table}[H]
+\centering
+\caption{Filter stages.}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{C{1.2cm} L{11.5cm}}
+\toprule
+\textbf{Filter} & \textbf{Condition} \\
+\midrule
+F0 & Global variables defined in the built set, excluding read-only data \\
+F1 & \ldots\ written by at least one function of the selected kind (boot or run time) \\
+F2 & \ldots\ and read by at least one function in \texttt{net} \\
+F3 & \ldots\ where writer and reader are in different compilation units \\
+F4 & \ldots\ where the variable is defined in a unit other than the writer's, so
+     that removing the writer leaves the symbol defined and the kernel still links \\
+F5 & \ldots\ where the build condition of the definition differs from that of the
+     writer, so that some configuration can separate them \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+A point of interpretation applies throughout the table. Filters F0 to F2 count
+\emph{variables}, because each asks a question about a variable as a whole.
+Filters F3 to F5 count \emph{pairs}, because from F3 onward the question concerns
+a particular writer taken together with a particular reader. A variable with one
+writer and fifty readers contributes one unit to the F2 count and fifty to the F3
+count. For this reason the pair totals are dominated by a small number of widely
+read variables, and the count of distinct variables surviving F5 is the figure
+that describes the size of the population requiring further examination.
+
+\subsection{F0 - The candidate population}
+
+F0 reads the symbol table of every object file and retains the entries that
+describe a defined variable. Entries in read-only sections are discarded, since
+a variable that cannot be written at run time cannot lose an initialisation.
+Function symbols and undefined references are likewise discarded. What remains is
+the set of variables that could in principle be left uninitialised.
+
+\subsection{F1 - Variables that are written}
+
+F1 asks whether any instruction writes the variable, and whether the writing
+function is of the kind under consideration. The access is taken from the form of
+the instruction recorded in Stage 1: a store or a read-modify-write qualifies,
+whereas a load or an instruction that merely takes the variable's address does
+not. The kind of writer is determined by the ELF section of the enclosing
+function: a writer in \texttt{.init.text} runs once during boot, and a writer in
+any other executable section may run at any time.
+
+The great majority of variables are removed here, because most global data in the
+kernel is established by its compile-time initialiser and never written
+afterwards. It is important to record what this removal does and does not mean. A
+variable removed by F1 has no \emph{directly visible} writer. A variable written
+through a pointer, through a helper such as \texttt{memcpy}, through a sysctl
+handler, or by code outside the compiled subtrees is removed even though a writer
+exists. F1 therefore narrows the population; it does not certify the variables it
+discards.
+
+\subsection{F2 - Variables that are read in the subsystem of interest}
+
+F2 retains the variables that are also loaded by code in the reader subsystem,
+which for this work is \texttt{net}. The scope is applied here rather than during
+extraction, so that writers and definitions remain visible across all compiled
+subtrees while readers are restricted to the subsystem under study. A variable
+written in \texttt{net} but read only in \texttt{kernel} or \texttt{mm} is
+therefore removed at this filter, and is removed by the choice of scope rather
+than by any property of the variable.
+
+\subsection{F3 - Separable compilation units}
+
+F3 forms pairs and retains those whose writer and reader lie in different object
+files. An object file is compiled or omitted as a whole, so a writer and a reader
+within one object can never be separated by a configuration: either both are
+present or neither is. Pairs internal to a single object are consequently of no
+interest, although a dependency may still exist between two regions of one file
+that are governed by different preprocessor conditions. That case requires an
+analysis of preprocessor guards and lies outside the present pipeline.
+
+\subsection{F4 - The silent-failure filter}
+
+F4 is the filter that isolates the dangerous case, and it is the only one that
+examines the variable's definition rather than its uses. For each surviving pair
+it asks whether some definition of the variable lies in an object other than the
+writer's.
+
+The reasoning is as follows. Suppose the variable were defined in the same object
+as its writer. Removing that object would remove the definition along with the
+writer, the reader's reference would become unresolved, and the link would fail.
+Such a configuration is rejected at build time, loudly and immediately, and it can
+never reach a running system. Now suppose instead that the definition lies
+elsewhere. Removing the writer's object leaves the variable in place, holding
+whatever value its compile-time initialiser gave it. The reader still resolves,
+the kernel links without complaint, and the defect becomes observable only when
+the reader executes. The pairs surviving F4 are exactly those in the second
+situation, and that is the class this research concerns.
+
+\subsection{F5 - Differing build conditions}
+
+F5 retains a pair when the build condition of the definition differs from that of
+the writer. Identical conditions, including the case where both are
+unconditional, mean the two are always compiled together and no configuration can
+separate them.
+
+The build condition of a compilation unit is not given by any single line of a
+Makefile. It is obtained by walking the Kbuild hierarchy upward from the unit's
+own directory, collecting every option that governs the unit along the way, and
+combining them conjunctively. Three mechanisms contribute. A unit may be named
+directly by an \texttt{obj-\$(CONFIG\_X)} assignment. It may instead be a member
+of a composite module, in which case both the member's own gate and the gate of
+the module it belongs to apply. Finally, the parent directory must itself be
+entered, which may be conditional. Resolving only the nearest mechanism yields an
+incomplete condition and, because F5 is a comparison between two such conditions,
+an incomplete condition can cause a pair to be retained or discarded wrongly.
+
+\subsection{What the filters establish, and what they do not}
+
+The filters establish that a pair is \emph{structurally} separable: the writer and
+the reader occupy different units, the variable survives the writer's removal, and
+the two sides are governed by different options. Two further conditions must
+hold before a pair can be considered a genuine dependency, and none of them is
+tested by the pipeline as it stands.
+
+\begin{enumerate}[leftmargin=*, label=\textbf{(\roman*)}]
+  \item \textbf{Configuration reachability.} F5 compares the two conditions as
+        text and does not capture Kconfig dependencies, so it cannot tell whether
+        a configuration enabling the reader's option while disabling the writer's
+        is actually permitted. Two approaches are available for later work: pose
+        the question to a Kconfig solver, or check the pair against the composed
+        configurations a debloating tool produces, since such a configuration is
+        itself an instance of Kconfig's rules being satisfied. Neither is
+        implemented.
+  \item \textbf{Absence of a guard.} The reader may test the variable before use,
+        in which case the kernel handles the uninitialised state deliberately.
+        Stage 1 records whether a comparison instruction appears, but a source
+        level check is frequently compiled into a form that this record cannot
+        attribute to the variable. Guard classification is therefore the subject
+        of Stage 3.
+\end{enumerate}
+
+A pair that satisfies the filters but fails any of these two conditions is a
+structural separation that cannot occur, or that is handled when it does. The
+filters are accordingly best understood as a means of reducing a population of
+tens of thousands of variables to a few dozen distinct variables that merit the more expensive
+analyses, rather than as a test of whether a dependency is real.
+
+\section{Stage 3 - Guard Classification (designed)}
+
+For each reader surviving Stage 2, a Clang AST pass determines whether a test of
+the variable dominates its use, that is, whether every path from function entry
+to the dereference passes through a check. The analysis follows the value through
+a local variable when the reader assigns the global before use, and through
+inline accessor functions. Each reader is classified as guarded, unguarded, or
+unclear, and unclear cases are reported rather than silently resolved.
+
+The classifier will be calibrated on readers whose status has first been
+established by inspecting the source, so that its verdicts can be compared
+against a known answer before it is relied upon.
+
+\section{Stage 4 - Build-Time Safety Check (designed)}
+
+The check consumes a proposed configuration together with the Stage 3 output and
+rejects the configuration when it removes a writer whose reader is retained and
+classified unguarded. The intended deployment is as a gate in an automated kernel
+build pipeline, placed after a configuration is produced and before the kernel is
+built.
+
+The check that acts on the unguarded class: a candidate whose reader uses the variable
+without testing it is the case in which a retained reader can run against state
+that was never set up, so removal of its writer is rejected. Candidates in the
+guarded class are not rejected by the check, but they are not discarded either.
+\citet{kuo2020cozart} report that test suites cover only a small proportion of
+kernel code under coverage measurement. A reader that is guarded, or that is never
+reached by the tests, may therefore still matter in configurations the tests do
+not exercise. Guarded candidates are retained in the shortlist rather than
+dropped, and the question of whether a guarded dependence is genuinely required is
+left to later work.
+
+% ══════════════════════════════════════════════════════════════════════════════
+% SECTION VIII: EXPERIMENTS AND PRELIMINARY RESULTS
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Experiments and Preliminary Results}
+\label{sec:results}
+
+\section{Experimental Setup}
+
+All experiments use Linux 4.18 (Ubuntu cosmic, tree revision
+\texttt{66e4c0b79}) built with GCC 7.5.0 inside a container image fixed for the
+project. The subtrees \texttt{net}, \texttt{kernel}, \texttt{mm} and \texttt{lib}
+are compiled with debugging information enabled, producing 1,870 object files;
+a second build additionally including \texttt{fs} produces 3,026. Objects
+produced by linking several units together are excluded, since they duplicate the
+symbols of their members.
+
+The analysis is reproducible. A complete re-run from a freshly configured tree
+produced byte-identical extraction tables and identical candidate tables, in the
+same order, to those produced by the original run. The recorded run captures the
+source revision, the configuration hash, the compiler version and the checksums
+of the analysis scripts.
+
+\section{Extraction and Filtering}
+
+Extraction over the 1,870 objects recorded 39,624 global variable definitions and
+207,254 reference sites, with 14 instructions that the classifier could not
+assign to a category. Table~\ref{tab:funnel} gives the filter results for
+\texttt{net} readers, separately for boot-time and run-time writers.
+
+\begin{table}[H]
+\centering
+\caption{Filter results for \texttt{net} readers. F0--F2 count variables;
+F3--F5 count writer/reader pairs.}
+\label{tab:funnel}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{L{7.4cm} C{2.6cm} C{2.6cm}}
+\toprule
+\textbf{Filter} & \textbf{Boot writers} & \textbf{Run-time writers} \\
+\midrule
+F0 global variable definitions      & 33,125 & 33,125 \\
+F1 written by a writer of this kind &    212 &    315 \\
+F2 and read in \texttt{net}         &     76 &    117 \\
+F3 writer and reader in different units & 4,103 & 3,561 \\
+F4 definition survives removal of the writer & 1,817 & 2,764 \\
+F5 build conditions differ          &  1,739 &  2,610 \\
+\midrule
+Distinct variables surviving F5     &     34 &     42 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The pair counts are dominated by a small number of widely read variables, so the
+distinct-variable count is the meaningful measure of the population a human or a
+subsequent analysis must examine. Taking boot and run-time writers together, and
+adding a separate run with \texttt{fs} readers, the union is 49 distinct
+variables. The reduction from 33,125 defined variables to 49 candidates is the
+contribution of Stage 2, and it is what makes the subsequent source-level
+analysis affordable.
+
+\section{Independence from a Particular Configuration}
+
+To confirm that the method does not depend on the configuration used for the
+build, the same analysis was repeated on a maximally enabled configuration
+(\texttt{allyesconfig}, 2,008 objects). This produced 2,657 surviving pairs over
+34 distinct variables for boot writers and 1,959 pairs over 42 distinct variables
+for run-time writers, the same distinct-variable counts as the narrower build.
+Every distinct variable found in this wider build had already been surfaced by
+the narrower one, and a single additional variable appeared in the run-time set,
+which on inspection has a safe initial value and is only ever cleared, not
+initialised, by its writers.
+
+This supports the position that the candidate set is a property of the kernel and
+its build system rather than of the particular configuration analysed.
+
+\section{Status of the Candidate Set}
+
+The candidates produced by Stage 2 have not yet been classified. Establishing
+whether a given reader guards the variable before using it requires the
+source-level analysis described as Stage 3, which is not yet implemented. The
+binary-level flag recorded during extraction is not a substitute: a check present
+in the source is frequently compiled into a form that cannot be attributed to the
+variable, so that flag is unreliable in both directions.
+
+What the present work therefore establishes is the reduction itself. A population
+of tens of thousands of global variables is narrowed, by filters that are
+mechanical and reproducible, to a few dozen pairs whose writer and reader occupy
+different compilation units, whose variable survives removal of the writer, and
+whose two sides are governed by different build conditions. That set is small
+enough for the more expensive analyses to be applied to it, which is the purpose
+of the stage. Determining which members of it are genuine dependencies is the
+work of Stage 3 and the evaluation that follows.
+
+\section{Limitations of the Present Results}
+
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item \textbf{Guard recognition is not yet reliable.} The present pipeline
+        flags the absence of a comparison instruction in the reader's compiled
+        form, which does not correspond to the absence of a check in the source.
+        Stage 3 exists to replace this.
+  \item \textbf{Candidates are not yet classified.} No guard verdict is claimed
+        for any candidate. A variable with several readers may have differing
+        guard status across them, so classification must be per reader rather
+        than per variable.
+  \item \textbf{Recall is unmeasured.} The method cannot find dependencies
+        carried by per-namespace structure fields, registration state, or
+        initialisation ordering, and no measurement of what fraction of the true
+        population is detected is claimed. See Section~\ref{sec:eval}.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% SECTION IX: EVALUATION PLAN
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Evaluation Plan}
+\label{sec:eval}
+
+\section{What Is Claimed, and What Is Not}
+
+The population of undocumented non-functional dependencies in the Linux kernel
+cannot be enumerated. No complete reference set exists, and constructing one by
+hand would make the author simultaneously the designer of the tool and the oracle
+against which it is judged. Recall is therefore not claimed and not measured.
+
+The evaluation instead makes a \textbf{precision and existence} claim: of the
+candidates the method reports, what proportion are confirmed by a procedure in advance. 
+
+\section{Confirmation Procedure}
+
+The criterion for confirming a candidate is fixed before the candidate set is
+examined, so that it cannot be adjusted to suit the output. A candidate is
+confirmed when all of the following hold:
+
+\begin{enumerate}[leftmargin=*, label=\textbf{C\arabic*.}]
+  \item the call graph contains a path from a kernel entry point to the reader
+        that does not require the writer's initialisation path to have executed;
+  \item the Stage 3 guard analysis finds no test of the variable dominating the
+        read;
+  \item a KConfig solver reports that a configuration enabling the reader's
+        option while disabling the writer's option is satisfiable.
+\end{enumerate}
+
+The denominator is fixed in the same manner. Every candidate in the shortlist is carried through the procedure, and
+the outcome for each is reported as confirmed, refuted, or inconclusive.
+Reporting the inconclusive cases is part of the method, not an omission from it.
+
+\section{Evidence, Ranked by Independence}
+
+\begin{table}[H]
+\centering
+\caption{Forms of confirming evidence, strongest first.}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{L{3.4cm} L{9.2cm}}
+\toprule
+\textbf{Form} & \textbf{Description} \\
+\midrule
+Runtime witness &
+  A kernel built in a configuration where the writer's option is absent, booted
+  in an isolated virtual machine, with the execution path leading to the reader
+  exercised and the resulting kernel log recorded. The outcome is mechanical:
+  the fault either occurs or it does not. \\
+\addlinespace
+Mechanical static confirmation &
+  Criteria C1--C3, each computed by a tool rather than asserted. To prevent the
+  reachability analysis from inheriting the detector's blind spots, the call
+  graph is produced using an established external tool rather than code written
+  for this project. \\
+\addlinespace
+Source examination &
+  Used only where the above cannot be applied, and reported as such. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The runtime witness is the decisive evidence for readers classified unguarded. A
+single observed fault establishes that the dependency class occurs in practice,
+in a configuration KConfig permits, independently of any judgement by the author.
+
+\section{Functional Check on the Retained Kernel}
+
+After removing writers that the method does not flag, the resulting kernel is
+exercised with the \texttt{net} subsystem's self-tests and, where available, the
+LTP networking tests, in the manner Cozart applies to its own output. This
+demonstrates that the retained kernel remains functional. It is explicitly not
+evidence about the dependencies themselves: \citet{kuo2020cozart} report that
+test suites cover only a small proportion of kernel code under coverage
+measurement, so a reader that is guarded, or that is never reached by the tests,
+may still matter in configurations the tests do not exercise. Guarded candidates
+are therefore retained in the shortlist rather than discarded, and the question of
+whether a guarded dependence is genuinely required is left to later work.
+
+\section{Evaluation of RQ2}
+
+The safety check is evaluated by applying it to removal sets constructed to
+contain a writer whose reader is confirmed unguarded, and to matched sets whose
+readers are guarded, recording whether it rejects the former and accepts the
+latter.
+
+\section{Threats to Validity}
+
+\begin{itemize}[leftmargin=*, itemsep=6pt]
+  \item \textbf{Recall is unmeasured.} Recall is the fraction of all genuine
+        dependencies that a method finds. Measuring it requires a complete list
+        of the genuine dependencies, and no such list exists. Building one by hand
+        would make the author both the designer of the tool and the judge of its
+        results. The pipeline also sees only part of the problem: it observes
+        dependencies carried by global variables that are written and read by
+        direct instructions. Dependencies carried by other means, such as state
+        held in per-namespace structures, tables filled in by static initialisers,
+        registration through a function call, or writes made through a pointer,
+        are not observed. The counts reported here are therefore lower bounds,
+        and a negative result applies to the class of dependency the pipeline
+        models and not to every dependency in the kernel.
+
+  \item \textbf{Existence cannot be guaranteed.} The study looks for a specific
+        combination: a writer and a reader in different compilation units, a
+        variable that survives removal of the writer, two sides governed by
+        different options, and a reader that does not test the variable before
+        use. Dependencies of this kind are expected to be rare. Kernel code that
+        reads state set up elsewhere often tests it first or relies on a safe
+        initial value, and either of these makes a separation harmless even when
+        a configuration can produce it. There is a real possibility that no
+        instance occurs in the \texttt{net} subsystem. A study confined to
+        \texttt{net} may therefore confirm none. That outcome would answer the
+        question for this subsystem, but it would not show that the dependency
+        class is absent from the kernel as a whole, since other subsystems
+        follow different conventions.
+
+  \item \textbf{Limited generality.} The results come from one kernel version,
+        Linux 4.18, and one subsystem. Other versions contain different code, and
+        a dependency present in one may have been fixed or introduced in another.
+        Other subsystems differ in how carefully readers check shared state, so
+        the frequency found in \texttt{net} cannot be assumed to hold elsewhere.
+        The candidate set was produced from two builds, a distribution
+        configuration and a maximally enabled one, and agreed between them, but
+        this does not extend the result to other versions or subsystems.
+
+  \item \textbf{Tool bugs.} Several classifier and parser bugs surfaced during
+        this work, and each was fixed. The synthetic checks and the byte-identical
+        re-run show consistency. They do not show that no bug remains.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% SECTION X: RESOURCES
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Availability of Required Resources}
+
+All resources required are publicly available at no cost. No proprietary data,
+human participants, or ethical approval are required. The resources listed in the
+proposal remain accurate; those in current use are summarised below.
+
+\begin{table}[H]
+\centering
+\caption{Resources in use.}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{L{3.5cm} L{3.5cm} L{5.5cm}}
+\toprule
+\textbf{Resource} & \textbf{Source} & \textbf{Purpose} \\
+\midrule
+Linux kernel source (4.18) & kernel.org, Ubuntu - free &
+  Analysis target \\
+\addlinespace
+Cozart framework and configurations & GitHub - open source \citep{kuo2020cozart} &
+  Configuration sets for the debloating application \\
+\addlinespace
+GNU binutils, GCC & Open source - free &
+  Building the kernel and reading compiled objects \\
+\addlinespace
+Clang/LLVM & Open source - free &
+  Guard classification (Stage 3) \\
+\addlinespace
+kconfiglib & Open source - free &
+  Evaluating whether a configuration permits a separation \\
+\addlinespace
+Smatch, Clang Static Analyzer & Open source - free &
+  Baselines for comparison \\
+\addlinespace
+QEMU virtualisation & Open source - free &
+  Isolated kernel execution for the runtime witness \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent\textbf{Hardware:} A standard machine with 16~GB RAM and 8 CPU cores is
+sufficient for kernel compilation and virtualised testing.
+
+% ══════════════════════════════════════════════════════════════════════════════
+% SECTION XI: TIMELINE
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Project Progress and Remaining Plan}
+
+\section{Project Schedule}
+
+Figure~\ref{fig:gantt} shows the schedule across the twelve-month project. The
+dashed line marks the end of the interim report. Dark bars show work completed up
+to that point, and light bars show work planned after it.
+
+\begin{figure}[H]
+\centering
+\definecolor{ganttdark}{RGB}{0, 76, 172}
+\definecolor{ganttlight}{RGB}{140, 185, 255}
+\begin{ganttchart}[
+    hgrid={draw=gray!25},
+    vgrid={*{12}{draw=gray!40, dashed}, draw=none},
+    x unit=0.74cm, y unit title=0.7cm, y unit chart=0.62cm,
+    title/.style={draw=none, fill=ganttlight!35},
+    title label font=\fontsize{6.5}{7}\selectfont\bfseries\sffamily,
+    bar/.style={fill=ganttlight, draw=none, rounded corners=3pt},
+    bar height=0.5,
+    bar label font=\scriptsize\bfseries\color{ganttdark},
+    bar label node/.append style={anchor=east, align=right},
+    vrule/.style={draw=black, dotted, line width=0.8pt},
+    canvas/.style={draw=none}
+  ]{1}{13}
+  \gantttitle{APR}{1} \gantttitle{MAY}{1} \gantttitle{JUN}{1} \gantttitle{JUL}{1}
+  \gantttitle{AUG}{1} \gantttitle{SEP}{1} \gantttitle{OCT}{1} \gantttitle{NOV}{1}
+  \gantttitle{DEC}{1} \gantttitle{JAN}{1} \gantttitle{FEB}{1} \gantttitle{MAR}{1}
+  \gantttitle{APR}{1} \\
+  \ganttbar[bar/.append style={fill=ganttdark}]{Literature survey}{1}{7}
+  \ganttbar[bar/.append style={fill=ganttlight}]{}{8}{11} \\
+  \ganttbar[bar/.append style={fill=ganttdark}]{Project proposal}{1}{3} \\
+  \ganttbar[bar/.append style={fill=ganttdark}]{Stages 1--2 development}{4}{7} \\
+  \ganttbar[bar/.append style={fill=ganttdark}]{Interim report}{7}{7} \\
+  \ganttbar{Stage 3 (Clang)}{8}{9} \\
+  \ganttbar{Evaluation}{8}{10} \\
+  \ganttbar{Stage 4 (safety check)}{11}{11} \\
+  \ganttbar{Final report}{12}{12}
+  \ganttvrule[vrule/.append style={dashed}]{}{7}
+\end{ganttchart}
+\caption{Project schedule. Dashed line: end of the interim report. Dark bars:
+work completed up to the interim report. Light bars: planned work.}
+\label{fig:gantt}
+\end{figure}
+
+\section{Progress to Date}
+
+\begin{table}[H]
+\centering
+\caption{Work completed.}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{L{4.6cm} L{8.2cm}}
+\toprule
+\textbf{Item} & \textbf{Outcome} \\
+\midrule
+Extraction (Stage 1) &
+  Implemented and validated on synthetic inputs before use; processes 1,870
+  objects, recording 39,624 variables and 207,254 reference sites. \\
+\addlinespace
+Filtering (Stage 2) &
+  Implemented, including resolution of build conditions through the Makefile
+  hierarchy, including the composite-object and text-substitution forms;
+  reduces 33,125 defined variables to 49 candidates. \\
+\addlinespace
+Reproducibility &
+  Full re-run from a fresh build reproduces extraction and candidate tables
+  identically; run metadata recorded. \\
+\addlinespace
+Candidate set &
+  Produced and recorded, but not yet classified. Guard status per reader
+  requires Stage 3, which is not implemented. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Remaining Plan}
+
+\begin{table}[H]
+\centering
+\caption{Remaining work.}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{C{1.6cm} L{5.4cm} L{5.8cm}}
+\toprule
+\textbf{Period} & \textbf{Activity} & \textbf{Milestone} \\
+\midrule
+Months 6--7 &
+  Implement Stage 3 guard
+  classification; fix confirmation criteria and denominator in writing &
+  Guard status for every reader of every candidate \\
+\addlinespace
+Months 8--9 &
+  Call graph with an external tool; KConfig satisfiability for each candidate;
+  runtime witness for unguarded readers &
+  Confirmed, refuted and inconclusive counts over a fixed candidate set \\
+\addlinespace
+Month 11 &
+  Stage 4 safety check &
+  Check demonstrated to reject unsafe and accept safe removal sets \\
+\addlinespace
+Month 12 &
+  Write-up and submission &
+  Final report \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Risk Assessment}
+
+\begin{table}[H]
+\centering
+\caption{Project risks and mitigation strategies.}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabularx}{\textwidth}{L{3.8cm} C{1.8cm} L{6.9cm}}
+\toprule
+\textbf{Risk} & \textbf{Likelihood} & \textbf{Mitigation} \\
+\midrule
+Guard classification proves inaccurate & Medium &
+  Calibrated against readers whose status has been established by source
+  inspection; unclear cases reported rather than resolved silently \\
+Runtime witness does not reproduce the fault & Medium &
+  A negative result is reported as such and refutes that candidate under the
+  conditions tested; the static analysis result stands independently \\
+Few candidates confirmed & Low--Medium &
+  Precision is the reported quantity; a low confirmed count with a documented
+  procedure is a valid result that answers the question asked \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% SECTION XII: REFERENCES
+% ══════════════════════════════════════════════════════════════════════════════
+\backmatter
+\newpage
+\renewcommand{\bibname}{References}
+\addcontentsline{toc}{chapter}{References}
+\bibliography{references}
+
+\end{document}

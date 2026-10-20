@@ -1,0 +1,22 @@
+159- * PREROUTING and continue the bridge PRE_ROUTING hook. See comment
+160- * for br_nf_pre_routing_finish(), same logic is used here but
+161- * equivalent IPv6 function ip6_route_input() called indirectly.
+162- */
+163:static int br_nf_pre_routing_finish_ipv6(struct net *net, struct sock *sk, struct sk_buff *skb)
+164-{
+165-	struct nf_bridge_info *nf_bridge = nf_bridge_info_get(skb);
+166-	struct rtable *rt;
+167-	struct net_device *dev = skb->dev;
+168-	const struct nf_ipv6_ops *v6ops = nf_get_ipv6_ops();
+169-
+170-	nf_bridge->frag_max_size = IP6CB(skb)->frag_max_size;
+171-
+--
+235-
+236-	skb->protocol = htons(ETH_P_IPV6);
+237-	NF_HOOK(NFPROTO_IPV6, NF_INET_PRE_ROUTING, state->net, state->sk, skb,
+238-		skb->dev, NULL,
+239:		br_nf_pre_routing_finish_ipv6);
+240-
+241-	return NF_STOLEN;
+242-}

@@ -1,0 +1,50 @@
+#!/bin/sh
+set -x
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
+mkdir -p /lib/modules
+echo === MODULAR IPV6 DISABLED WITNESS ===
+cat /proc/cmdline
+echo === LOADING IPV6 PROVIDER WITH disable=1 ===
+insmod /lib/modules/ipv6.ko disable=1 2>&1 || echo insmod-ipv6-failed
+dmesg | tail -30
+echo === LOADING BRIDGE NETFILTER MODULES ===
+insmod /lib/modules/llc.ko 2>&1 || echo insmod-llc-failed
+insmod /lib/modules/stp.ko 2>&1 || echo insmod-stp-failed
+insmod /lib/modules/bridge.ko 2>&1 || echo insmod-bridge-failed
+insmod /lib/modules/br_netfilter.ko 2>&1 || echo insmod-br-netfilter-failed
+echo === LOADING IPV6 NAT MODULES ===
+insmod /lib/modules/nf_defrag_ipv6.ko 2>&1 || echo insmod-nf-defrag-ipv6-failed
+insmod /lib/modules/nf_conntrack_ipv6.ko 2>&1 || echo insmod-nf-conntrack-ipv6-failed
+insmod /lib/modules/nf_nat.ko 2>&1 || echo insmod-nf-nat-failed
+insmod /lib/modules/nf_nat_ipv6.ko 2>&1 || echo insmod-nf-nat-ipv6-failed
+insmod /lib/modules/ip6_tables.ko 2>&1 || echo insmod-ip6-tables-failed
+insmod /lib/modules/xt_nat.ko 2>&1 || echo insmod-xt-nat-failed
+insmod /lib/modules/ip6table_nat.ko 2>&1 || echo insmod-ip6table-nat-failed
+echo === MODULE STATE ===
+cat /proc/modules
+cat /sys/module/ipv6/parameters/disable 2>/dev/null || true
+echo === BRIDGE SETUP ===
+ip link show
+ip link add brtest type bridge || exit 10
+ip link add vethA type veth peer vethB || exit 11
+ip link show
+brctl addif brtest vethA || exit 12
+brctl addif brtest veth0 || exit 13
+ip link set dev brtest up || exit 14
+ip link set dev vethA up || exit 15
+ip link set dev veth0 up || exit 16
+sysctl -w net.bridge.bridge-nf-call-ip6tables=1
+cat /proc/sys/net/bridge/bridge-nf-call-ip6tables
+echo === INSTALLING NAT RULE ===
+ip6tables -t nat -F PREROUTING
+ip6tables -t nat -A PREROUTING -d 2001:db8::1 -j DNAT --to-destination 2001:db8::2
+ip6tables -t nat -vnL PREROUTING
+echo === INJECTING IPV6 FRAME ===
+/send_ipv6 veth0 2001:db8::10 2001:db8::1 || exit 17
+sleep 2
+echo === AFTER INJECTION: NO CRASH ===
+dmesg | tail -160
+poweroff -f
+sleep 5

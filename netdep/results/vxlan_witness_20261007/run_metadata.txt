@@ -1,0 +1,11 @@
+Kernel source: Linux 4.18.20
+Kernel command line: console=ttyS0 panic=1 oops=panic
+Virtual machine: QEMU x86_64, TCG, 512 MiB RAM, 2 CPUs
+Container: netdep
+Kernel image: bzImage
+Initramfs: vxlan_initramfs.cpio
+IPv6 module: intentionally not included in the initramfs; /proc/modules was empty
+VXLAN device: id 42, local 192.0.2.1, remote 192.0.2.2, dstport 4789, rsc
+FDB entry: 02:00:00:00:00:02 dst 192.0.2.2 router permanent
+Trigger: /send_ipv6 vxlan0
+Expected result: NULL dereference in neigh_lookup via route_shortcircuit

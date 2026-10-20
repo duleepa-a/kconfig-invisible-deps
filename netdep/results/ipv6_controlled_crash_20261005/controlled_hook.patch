@@ -1,0 +1,31 @@
+--- /work/br_netfilter_ipv6.c.orig	2026-10-05 18:01:25.124632749 +0000
++++ /work/linux-cosmic/net/bridge/br_netfilter_ipv6.c	2026-10-05 18:04:23.995373290 +0000
+@@ -44,6 +44,9 @@
+ #include <linux/sysctl.h>
+ #endif
+ 
++static int br_nf_test_force_daddr_change;
++module_param_named(test_force_daddr_change, br_nf_test_force_daddr_change, int, 0644);
++
+ /* We only check the length. A bridge shouldn't do any hop-by-hop stuff
+  * anyway
+  */
+@@ -221,6 +224,7 @@
+ {
+ 	struct nf_bridge_info *nf_bridge;
+ 
++	pr_info_once("br_nf test: IPv6 bridge PRE_ROUTING reached\n");
+ 	if (br_validate_ipv6(state->net, skb))
+ 		return NF_DROP;
+ 
+@@ -232,6 +236,10 @@
+ 
+ 	nf_bridge = nf_bridge_info_get(skb);
+ 	nf_bridge->ipv6_daddr = ipv6_hdr(skb)->daddr;
++	if (br_nf_test_force_daddr_change) {
++		nf_bridge->ipv6_daddr.s6_addr[15] ^= 1;
++		pr_info_once("br_nf test: forcing IPv6 destination-change branch\n");
++	}
+ 
+ 	skb->protocol = htons(ETH_P_IPV6);
+ 	NF_HOOK(NFPROTO_IPV6, NF_INET_PRE_ROUTING, state->net, state->sk, skb,

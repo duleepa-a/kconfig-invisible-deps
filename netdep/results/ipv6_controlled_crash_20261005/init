@@ -1,0 +1,26 @@
+#!/bin/sh
+set -x
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
+echo === CONTROLLED EXACT-PATH WITNESS ===
+cat /proc/cmdline
+ip link show
+ip link add brtest type bridge || exit 10
+ip link add vethA type veth peer vethB || exit 11
+ip link show
+brctl addif brtest vethA || exit 12
+brctl addif brtest veth0 || exit 13
+ip link set dev brtest up || exit 14
+ip link set dev vethA up || exit 15
+ip link set dev veth0 up || exit 16
+sysctl -w net.bridge.bridge-nf-call-ip6tables=1
+cat /proc/sys/net/bridge/bridge-nf-call-ip6tables
+echo === INJECTING IPv6 FRAME ===
+/send_ipv6 veth0 2001:db8::10 2001:db8::1 || exit 17
+sleep 2
+echo === AFTER INJECTION ===
+dmesg | tail -160
+echo === UNEXPECTED: NO CRASH ===
+poweroff -f
+sleep 5

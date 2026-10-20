@@ -1,0 +1,20 @@
+#!/bin/sh
+set -x
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
+ip link add under0 type veth peer name under1
+ip addr add 192.0.2.1/24 dev under0
+ip addr add 192.0.2.2/24 dev under1
+ip link set under0 up
+ip link set under1 up
+ip link add vxlan0 type vxlan id 42 dev under0 local 192.0.2.1 remote 192.0.2.2 dstport 4789 proxy
+ip link set vxlan0 up
+cat /proc/modules || true
+echo === INJECTING IPV6 NEIGHBOR SOLICITATION ===
+/send_ns vxlan0
+sleep 2
+dmesg | tail -160
+echo === TRIGGER NOT REACHED ===
+poweroff -f
+sleep 5

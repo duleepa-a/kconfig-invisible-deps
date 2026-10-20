@@ -1,0 +1,22 @@
+=== INJECTING IPv6 FRAME ===
+br_nf test: IPv6 bridge PRE_ROUTING reached
+br_nf test: forcing IPv6 destination-change branch
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
+Oops: 0000 [#1] SMP NOPTI
+CPU: 0 PID: 114 Comm: send_ipv6 Not tainted 4.18.20+ #7
+RIP: 0010:br_nf_pre_routing_finish_ipv6+0xaa/0x1f0
+CR2: 0000000000000008
+Call Trace:
+  nf_hook_slow
+  br_nf_pre_routing_ipv6
+  br_nf_pre_routing
+  nf_hook_slow
+  br_handle_frame
+  __netif_receive_skb_core
+  process_backlog
+  net_rx_action
+  packet_sendmsg
+  __sys_sendto
+  __x64_sys_sendto
+Kernel panic - not syncing: Fatal exception in interrupt
+Rebooting in 1 seconds..

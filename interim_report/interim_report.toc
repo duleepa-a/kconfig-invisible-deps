@@ -1,0 +1,49 @@
+\contentsline {chapter}{List of Acronyms}{vi}{chapter*.4}%
+\contentsline {chapter}{\numberline {1}Introduction, Motivation, Aims and Objectives}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Introduction}{1}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Motivation}{1}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Revised Aims and Objectives}{2}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Changes Since the Proposal}{3}{section.1.4}%
+\contentsline {chapter}{\numberline {2}Literature Review and Research Gap}{4}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Kernel Debloating: State of the Art}{4}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Configuration Dependencies and Static Analysis}{4}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Identified Research Gap}{5}{section.2.3}%
+\contentsline {section}{\numberline {2.4}The Dependency Pattern}{6}{section.2.4}%
+\contentsline {chapter}{\numberline {3}Research Questions, Significance and Scope}{7}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Revised Research Questions}{7}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Justification of Significance}{7}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Scope and Delimitations}{8}{section.3.3}%
+\contentsline {chapter}{\numberline {4}Research Approach and Methodology}{9}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Overview}{9}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Why Object-File Analysis Precedes Clang}{9}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Stage 1 - Extraction}{10}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Stage 2 - Filtering}{10}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}F0 - The candidate population}{11}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}F1 - Variables that are written}{11}{subsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.4.3}F2 - Variables that are read in the subsystem of interest}{12}{subsection.4.4.3}%
+\contentsline {subsection}{\numberline {4.4.4}F3 - Separable compilation units}{12}{subsection.4.4.4}%
+\contentsline {subsection}{\numberline {4.4.5}F4 - The silent-failure filter}{12}{subsection.4.4.5}%
+\contentsline {subsection}{\numberline {4.4.6}F5 - Differing build conditions}{13}{subsection.4.4.6}%
+\contentsline {subsection}{\numberline {4.4.7}What the filters establish, and what they do not}{13}{subsection.4.4.7}%
+\contentsline {section}{\numberline {4.5}Stage 3 - Guard Classification (designed)}{14}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Stage 4 - Build-Time Safety Check (designed)}{14}{section.4.6}%
+\contentsline {chapter}{\numberline {5}Experiments and Preliminary Results}{15}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Experimental Setup}{15}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Extraction and Filtering}{15}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Independence from a Particular Configuration}{16}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Status of the Candidate Set}{17}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Limitations of the Present Results}{17}{section.5.5}%
+\contentsline {chapter}{\numberline {6}Evaluation Plan}{18}{chapter.6}%
+\contentsline {section}{\numberline {6.1}What Is Claimed, and What Is Not}{18}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Confirmation Procedure}{18}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Evidence, Ranked by Independence}{19}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Functional Check on the Retained Kernel}{19}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Evaluation of RQ2}{20}{section.6.5}%
+\contentsline {section}{\numberline {6.6}Threats to Validity}{20}{section.6.6}%
+\contentsline {chapter}{\numberline {7}Availability of Required Resources}{22}{chapter.7}%
+\contentsline {chapter}{\numberline {8}Project Progress and Remaining Plan}{23}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Project Schedule}{23}{section.8.1}%
+\contentsline {section}{\numberline {8.2}Progress to Date}{24}{section.8.2}%
+\contentsline {section}{\numberline {8.3}Remaining Plan}{25}{section.8.3}%
+\contentsline {section}{\numberline {8.4}Risk Assessment}{26}{section.8.4}%
+\contentsline {chapter}{References}{27}{table.8.3}%

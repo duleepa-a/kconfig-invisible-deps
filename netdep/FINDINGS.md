@@ -2267,9 +2267,12 @@ three known fixes, and no other site changed status. 5 sites disappeared
 (renamed or refactored).
 Files: `results/ipv6dis_418.tsv`, `results/ipv6dis_v54.tsv`.
 
-Reading: 3 of 72 are confirmed by upstream fixes. That is the detector's
-demonstrated precision (about 4%); it says nothing about whether the other 69
-are bugs, only that upstream had not changed them by 5.4.
+Reading: 3 of the 72 sites match known upstream fixes. That is a recall check
+on known bugs, not a precision measure. Precision needs a verdict for every
+flag, and the 69 unfixed sites are unverified, not false. Upstream not having
+changed a site by 5.4 is not evidence that it is safe; unfixed flags are where
+new findings would come from. Verdicts come from reading the code (see the
+audit below), a guard analysis, or a test.
 
 ### Audit of all 72 unguarded sites
 
@@ -2323,6 +2326,130 @@ my history clone stops at v5.4, so a later upstream fix is possible.
   category, and the seven hardware sites were not read in depth.
 - Non-IPv6-stack L2 paths beyond the flagged ones (bridge/netdev-family
   netfilter, flowtable) were not systematically audited.
+
+## PART 20 — Precise reachability trace for `nf_ipv6_ops`, and controlled crash reproduction
+
+Part 12's Correction established that `br_nf_pre_routing_finish_ipv6()` derefs
+`nf_ipv6_ops` (via the `nf_get_ipv6_ops()` accessor) with no NULL check, and
+that Kconfig permits the state (`BRIDGE_NETFILTER=y`, `IPV6=m` not loaded, or
+`ipv6.disable=1`). This part (1) traces the exact conditional path that reaches the dereference,
+matched line-for-line against the upstream fix, and (2) records a controlled
+witness-kernel run that boots and crashes in that exact path.
+
+### The exact reachable path (source read, `net/bridge/`)
+
+```
+br_nf_pre_routing()                          [br_netfilter_hooks.c]
+  IS_IPV6(skb) && (brnf_call_ip6tables || br->nf_call_ip6tables)   -- true by default:
+                                                brnf_call_ip6tables __read_mostly = 1
+  -> br_nf_pre_routing_ipv6()                 [br_netfilter_ipv6.c]
+       NF_HOOK(NFPROTO_IPV6, NF_INET_PRE_ROUTING, ..., br_nf_pre_routing_finish_ipv6)
+       -- this is the SAME hook point normal host ip6tables PREROUTING uses,
+          so an ordinary `ip6tables -t nat PREROUTING` DNAT rule applies to
+          bridged traffic too (that visibility is br_netfilter's purpose)
+  -> br_nf_pre_routing_finish_ipv6()          [br_netfilter_ipv6.c:163]
+       v6ops = nf_get_ipv6_ops();                          -- always runs, no guard
+       if (br_nf_ipv6_daddr_was_changed(skb, nf_bridge)) {  -- true only if PREROUTING
+                                                                changed skb's dest addr
+           v6ops->route_input(skb);                         -- UNGUARDED DEREF HERE
+       } else {
+           rt = bridge_parent_rtable(...);                  -- does not touch v6ops
+       }
+```
+
+**Correction to the earlier framing:** the deref is not reached by "any IPv6
+traffic across the bridge" — only when the `daddr_was_changed` branch is
+taken, i.e. only when a PREROUTING NAT rule (a DNAT) rewrote the packet's
+destination address before this function runs. Plain forwarding without NAT
+takes the `else` branch and never touches `v6ops`. This was not stated
+precisely in Part 12.
+
+### Matched against the upstream fix
+
+`git show 48bd0d68cd` (`/work/hist`) adds, at the very top of the `IS_IPV6`
+branch in `br_nf_pre_routing()`:
+
+```c
+if (!ipv6_mod_enabled()) {
+        pr_warn_once("Module ipv6 is disabled, so call_ip6tables is not supported.");
+        return NF_DROP;
+}
+```
+
+This guards the whole IPv6 bridge-netfilter path (broader than the narrow
+`daddr_was_changed` branch that actually derefs `v6ops`), which is consistent
+with — and stronger confirmation of — the reachability trace above.
+
+### Confirmed: `ipv6.disable=1` keeps `nf_ipv6_ops` NULL even with `IPV6=y` (built-in)
+
+Re-read `net/ipv6/af_inet6.c`: `disable_ipv6_mod` is a `module_param_named`,
+which for built-in code becomes a boot parameter (`ipv6.disable=1`) the same
+way it would for a loadable module. `inet6_init()` checks it and does
+`goto out` **before** calling `ipv6_netfilter_init()` (the function that sets
+`nf_ipv6_ops` via `RCU_INIT_POINTER`). So with `CONFIG_IPV6=y` and
+`ipv6.disable=1` on the boot command line, `nf_ipv6_ops` stays NULL for the
+life of the boot, while `IP6_NF_IPTABLES`, `IP6_NF_NAT`, `BRIDGE_NETFILTER`
+etc. (all independent of this early-exit) are unaffected and fully
+functional. This is a cleaner reproduction setup than `IPV6=m` not loaded,
+because loading `ip6table_nat.ko` etc. has no dependency that would force
+`nf_ipv6_ops` to become set (there is no separate `ipv6.ko` to modprobe when
+`IPV6=y`).
+
+### Controlled witness kernel and runtime result
+
+A second witness kernel (`witness2`) was configured from `results/witness_composed.config`
+with `BRIDGE=y`, `BRIDGE_NETFILTER=y`, `VETH=y`, `IP6_NF_IPTABLES=y`,
+`IP6_NF_NAT=m`, `NF_NAT_IPV6=m`, `IPV6=y` (`make olddefconfig`, exit 0) and
+built cleanly (`make -j8`, exit 0, `arch/x86/boot/bzImage` produced,
+7.3 MB). An initramfs was staged with a real `ip6tables` binary and its
+shared-library dependencies (`libip4tc`, `libip6tc`, `libxtables`, `libc`,
+`libdl`, the dynamic linker) plus the `libip6t_DNAT.so` xtables extension and
+the `ip6table_nat.ko` / `nf_nat_ipv6.ko` / `nf_nat.ko` kernel modules, copied
+from the same build.
+
+The original `CONFIG_IPV6=m` module-retention setup was also attempted, but
+did not reach the trigger: in this 4.18 tree `CONFIG_BRIDGE` depends on
+`IPV6 || IPV6=n`, so the bridge module imports IPv6 symbols and cannot be
+loaded while `ipv6.ko` is absent. That failed run is retained separately as
+`results/ipv6_witness_20261005/`.
+
+For an executable witness, the kernel was rebuilt with `CONFIG_IPV6=y` and
+booted with `ipv6.disable=1`. A test-only parameter,
+`br_netfilter.test_force_daddr_change=1`, changes only the saved destination
+metadata in `br_nf_pre_routing_ipv6()`, selecting the existing
+`br_nf_ipv6_daddr_was_changed()` branch. The vulnerable
+`v6ops->route_input(skb)` dereference is unchanged. A bridge/veth setup and
+raw Ethernet IPv6 frame then produced:
+
+```
+br_nf test: IPv6 bridge PRE_ROUTING reached
+br_nf test: forcing IPv6 destination-change branch
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
+RIP: 0010:br_nf_pre_routing_finish_ipv6+0xaa/0x1f0
+CR2: 0000000000000008
+Kernel panic - not syncing: Fatal exception in interrupt
+```
+
+**Status: controlled crash confirmed by execution.** This proves that the
+candidate dereference is fatal when its destination-change branch is entered.
+It does not claim that an unmodified, natural `ip6tables` DNAT setup was
+successfully demonstrated; the branch selection is deliberately controlled.
+The complete reproducibility bundle is in
+`results/ipv6_controlled_crash_20261005/`, including the kernel, initramfs,
+source patch, exact scripts, serial log, concise evidence excerpt, and
+hashes.
+
+### What Part 20 does not show
+
+- It does not show a natural DNAT-only trigger without the test-only branch
+  selector.
+- The reproduction plan was not validated end-to-end even in principle —
+  e.g. whether a bridge with two `veth` ports set up via busybox `ip`/`brctl`
+  in this minimal initramfs actually forwards frames the way a real Ethernet
+  bridge would, or whether `ip6tables -t nat` needs additional modules beyond
+  the ones listed, was never checked.
+- `results/witness2_bzImage` and the modified initramfs are container-only;
+  neither was copied out to the repository.
 
 ## Files
 
@@ -2385,3 +2512,6 @@ my history clone stops at v5.4, so a later upstream fix is possible.
 - `ipv6dis.py`, `results/ipv6dis_*.tsv` — Part 19: `ipv6.disable=1` unguarded-call detector and outputs.
 - `readable_csv.py`, `annotate.py`, `results/manual_verdicts.csv`, `results/run_20260925_004337/` — full re-run of the Cozart-config search (rebuilt from `base.config`, re-extracted, funnel re-run; reproduces the earlier candidate tables row for row). Contains a tool-only `readable_csv_<timestamp>.csv`, the annotated CSV with hand-written verdicts, per-symbol summary, raw tool output and `run_info.txt`.
 - `README.md` — step-by-step guide to running the whole pipeline from scratch, with every command and the expected numbers.
+- `results/ipv6_controlled_crash_20261005/` — controlled exact-path crash
+  bundle: rebuilt kernel, initramfs, configuration, source patch, scripts,
+  serial log, evidence excerpt, and SHA-256 manifest.

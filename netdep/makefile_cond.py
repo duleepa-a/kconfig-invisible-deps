@@ -35,6 +35,13 @@ from functools import lru_cache
 
 OBJ_LINE_RE = re.compile(r'^(\w+)-\$\(CONFIG_(\w+)\)\s*[:+]?=\s*(.+)$')
 OBJ_Y_LINE_RE = re.compile(r'^(\w+)-y\s*[:+]?=\s*(.+)$')
+# `foo-$(subst m,y,$(CONFIG_X)) += bar.o` -- member is built (into the parent,
+# as built-in) whenever CONFIG_X is y OR m. Condition is still CONFIG_X.
+OBJ_SUBST_LINE_RE = re.compile(
+    r'^(\w+)-\$\(subst\s+m,y,\s*\$\(CONFIG_(\w+)\)\)\s*[:+]?=\s*(.+)$')
+# `foo-objs := a.o b.o` -- kbuild's older spelling of `foo-y`, unconditional
+# membership of the composite object `foo.o`.
+OBJ_OBJS_LINE_RE = re.compile(r'^(\w+)-objs\s*[:+]?=\s*(.+)$')
 
 
 def _read_makefile(path):
@@ -53,10 +60,20 @@ def _parse_makefile(mk_path):
         line = line.strip()
         if not line or line.startswith('#'):
             continue
+        m = OBJ_SUBST_LINE_RE.match(line)
+        if m:
+            prefix, cfg, rest = m.group(1), m.group(2), m.group(3)
+            entries.append((prefix, 'CONFIG_' + cfg, rest.split()))
+            continue
         m = OBJ_LINE_RE.match(line)
         if m:
             prefix, cfg, rest = m.group(1), m.group(2), m.group(3)
             entries.append((prefix, 'CONFIG_' + cfg, rest.split()))
+            continue
+        m = OBJ_OBJS_LINE_RE.match(line)
+        if m:
+            prefix, rest = m.group(1), m.group(2)
+            entries.append((prefix, None, rest.split()))
             continue
         m = OBJ_Y_LINE_RE.match(line)
         if m:
