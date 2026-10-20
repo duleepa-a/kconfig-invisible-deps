@@ -57,8 +57,10 @@ def cond_holds(kconf, names, unknown):
     return True
 
 
-def try_separate(kconf, base_config, writer_names, reader_names, unknown):
-    """Attempt to build a configuration with reader on and writer off.
+def try_separate(kconf, base_config, writer_names, reader_names, unknown, def_names=()):
+    """Attempt to build a configuration with the DEFINITION and the reader on
+    and the writer off (definition present AND reader present AND writer
+    absent -- the definition must survive or the kernel does not link).
     Returns (separable, writer_holds, reader_holds)."""
     kconf.load_config(base_config)
 
@@ -68,8 +70,9 @@ def try_separate(kconf, base_config, writer_names, reader_names, unknown):
         if sym is not None and 0 in sym.assignable:
             sym.set_value(0)
 
-    # 2. drive the reader's condition on, preferring y, accepting m
-    for n in reader_names:
+    # 2. drive the definition's and the reader's conditions on, preferring
+    # y, accepting m (definition first so the reader cannot undo it)
+    for n in list(def_names) + list(reader_names):
         sym = kconf.syms.get(n[len('CONFIG_'):])
         if sym is None:
             continue
@@ -80,9 +83,10 @@ def try_separate(kconf, base_config, writer_names, reader_names, unknown):
 
     w = cond_holds(kconf, writer_names, unknown)
     r = cond_holds(kconf, reader_names, unknown)
-    if w is None or r is None:
+    d = cond_holds(kconf, def_names, unknown)
+    if w is None or r is None or d is None:
         return None, w, r
-    return (r and not w), w, r
+    return (r and d and not w), w, r
 
 
 def main():
@@ -115,7 +119,8 @@ def main():
     for r in rows:
         wnames = tuple(sorted(set(cond_symbols(r['writer_cond']))))
         rnames = tuple(sorted(set(cond_symbols(r['reader_cond']))))
-        key = (wnames, rnames)
+        dnames = tuple(sorted(set(cond_symbols(r.get('def_cond', '')))))
+        key = (wnames, rnames, dnames)
         if key not in cache:
             if not wnames:
                 # unconditional writer: always built, never separable
@@ -123,7 +128,7 @@ def main():
             else:
                 os.chdir(args.root)
                 cache[key] = try_separate(kconf, args.config, list(wnames),
-                                          list(rnames), unknown)
+                                          list(rnames), unknown, list(dnames))
                 os.chdir(cwd)
         sep, w, rr = cache[key]
         out_rows.append({
@@ -133,6 +138,7 @@ def main():
             'reader_func': r['reader_function'] if 'reader_function' in r else r.get('reader_func', ''),
             'writer_cond': r['writer_cond'],
             'reader_cond': r['reader_cond'],
+            'def_cond': r.get('def_cond', ''),
             'separable': {True: 'yes', False: 'no', None: 'unknown'}[sep],
         })
 
