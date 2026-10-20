@@ -30,6 +30,7 @@ This README assumes you know nothing about the project. Every command is shown i
 10. [Limits](#10-limits)
 11. [Troubleshooting](#11-troubleshooting)
 12. [File map](#12-file-map)
+13. [Code map: which code does each stage](#13-code-map-which-code-does-each-stage)
 
 ---
 
@@ -585,14 +586,15 @@ If yours differ, first re-check the commit, the config hash (Step 5) and the obj
 | F2 also read in reader dir | 76 | 117 | 151 |
 | F3 cross-object pairs | 4,103 | 3,561 | 2,396 |
 | F4 pairs surviving | 1,817 | 2,764 | 611 |
-| F5 pairs = rows in `candidates.tsv` | 1,723 | 2,608 | 126 |
-| F6 / F7 / F8 flagged pairs | 1 / 54 / 690 | 13 / 82 / 1,098 | 1 / 0 / 36 |
-| F9 exposed pairs | 17 | 27 | 0 |
+| F5 pairs = rows in `candidates.tsv` | 1,739 | 2,610 | 126 |
+| F6 / F7 / F8 flagged pairs | 17 / 58 / 706 | 13 / 84 / 1,100 | 1 / 0 / 36 |
+| F9 exposed pairs | 2 | 12 | 0 |
+| Distinct variables in `candidates.tsv` | 34 | 42 | 4 |
 
 Extraction: 39,624 symbols and 207,254 reference sites (net/kernel/mm/lib), 67,257 and 386,851 (with `fs/`).
 
-The `allyesconfig` variant (section 7) gives: 2,008 objects; boot F5 = 2,641 pairs (31 distinct symbols);
-lazy F5 = 1,957 pairs (41 distinct symbols).
+The `allyesconfig` variant (section 7) gives: 2,008 objects; boot F5 = 2,657 pairs (34 distinct symbols);
+lazy F5 = 1,959 pairs (42 distinct symbols).
 
 A complete reference run, with hashes and the exact commands, is in `results/run_20260925_004337/`
 (see its `run_info.txt`).
@@ -601,7 +603,10 @@ A complete reference run, with hashes and the exact commands, is in `results/run
 
 ## 10. Limits
 
-Read these before drawing conclusions.
+Read these before drawing conclusions. Limits of the ELF extraction step (`netdep.py`) and their status are in
+[LIMITATIONS.md](LIMITATIONS.md). Optional extraction/filter flags: `netdep.py --dwarf-fields` (struct-field
+column), `netdep.py --self-test`, `match.py --include-indirect`, `match.py --field-sensitive`. `xref.tsv` now also
+has `addr`, `off`, `field` columns.
 
 * The tools list **structural possibilities** (a writer and a reader that a build configuration could separate).
   They do not show that any of them fails at run time.
@@ -652,5 +657,50 @@ Read these before drawing conclusions.
 | `results/run_<timestamp>/` | One complete run: readable CSV, annotated CSV, per-symbol summary, raw tool output, extraction tables, `run_info.txt`. |
 | `results/candidates_*.tsv`, `results/funnel*.txt`, `results/*.tsv` | Tool outputs from the earlier Parts of the study. |
 | `results/positive_control.tsv` | The upstream-bug control set (hand-made). |
+
+## 13. Code map: which code does each stage
+
+Paths are relative to this directory. "Step" refers to section 5.
+
+| Stage | Code that does it | Command (short form) | Output |
+|---|---|---|---|
+| Build | The stock kernel build (no custom code), plus Cozart's `base.config` | Steps 4–6: `make -j8 prepare`, then `make -k -j8 net/ kernel/ mm/ lib/ fs/` | `.o` files in the source tree, `build.log` |
+| Skip-list of composite objects | `grep`/`awk` over `build.log` | Step 7 | `composite_*.txt` |
+| Extract definitions | `netdep.py`, function `parse_symbols` (`readelf -sW`, `-SW`) | Step 8 | `globals.tsv` |
+| Extract code references | `netdep.py`, function `parse_text_refs` (`objdump -dr -l`) | Step 8 | `xref.tsv`, `unclassified.txt` |
+| Extract data references | `netdep.py`, function `parse_data_refs` (`objdump -r`) | Step 8 | `xref.tsv` |
+| Build-condition table | Cozart's `extract-makefile.awk` and `postproc-fndb.awk`, with `join_makefile_continuations.py` | Steps 4 and 9 | `filename.db` |
+| Resolve a file's `CONFIG_*` gate | `makefile_cond.py` (used by `match.py`, with `--use-transitive`) | called inside Step 11 | build condition per object |
+| Filter F0 to F5 | `match.py` (F1: `is_boot_writer`, `is_lazy_writer`; F2: `is_reader`; F4: definition-object check; F5: build-condition comparison) | Step 11, with `--writer-mode boot` or `lazy` | `candidates.tsv`, `funnel.txt` |
+| Flags F6 to F9 | `match.py` (flags, not filters; F8 is unreliable) | Step 11 | columns in `candidates.tsv` |
+| Distinct variables | `distinct_variables.py` | `--input RUN=candidates.tsv ... --out file.csv` | one row per variable |
+| Readable CSV | `readable_csv.py` | Step 12 | tool-only CSV |
+| Manual verdicts joined in | `annotate.py` with `results/manual_verdicts.csv` (the verdicts are hand-written, not tool output) | Step 14 | annotated CSV, per-symbol summary |
+| Kconfig separability check | `kconfig_sep.py` (kconfiglib solver) | run separately; not part of the funnel | verdict per pair |
+| Shortlist | `shortlist.py` (solver verdict, unguarded, pointer-shaped) | run separately | shortlist |
+| Other detectors | `hookguard.py`, `ipv6dis.py`, `initcontent.py` (section 8) | see section 8 | see section 8 |
+| History mining | `mine_bugs.py`, `mine_bugs2.py`, `mine_bugs3.py`, `mine_target.py` | `mine_target.py REPO RANGE` (default `/work/hist`, `v4.18..v5.4`) | printed lists of commits |
+| Not built yet | Clang AST guard classification (Stage 3) and build-time safety check (Stage 4) | | |
+
+### Checking one reader that is outside the usual directories
+
+`drivers/` is not extracted by default, so a reader there (for example the VXLAN reader of `ipv6_stub`) is
+invisible to the funnel. To test one such object without building all of `drivers/`:
+
+```bash
+cd /work/cz && make -j8 drivers/net/vxlan.o          # build only that object
+python3 /Cozart/research/netdep/netdep.py --root /work/cz \
+    --subdirs net kernel mm lib drivers/net --out /work/vx_raw
+for m in boot lazy; do                                # one output directory per mode
+  mkdir -p /work/vx_$m && cp /work/vx_raw/globals.tsv /work/vx_raw/xref.tsv /work/vx_$m/
+  python3 /Cozart/research/netdep/match.py --out /work/vx_$m --filename-db /work/filename.db \
+      --composed-config /work/composed_nginx.txt --root-prefix /work/cz/ --root /work/cz \
+      --use-transitive --writer-mode $m --reader-scope ''
+done
+```
+
+Run `match.py` once per mode with its own `--out` directory, because each run overwrites `candidates.tsv`.
+Result of this run: `ipv6_stub` has five rows with `drivers/net/vxlan.o` as the reader, all passing F0 to F5.
+This shows detection once the reader's object is in scope; it does not by itself show Kconfig separability.
 
 For the reasoning behind each result and every correction made along the way, read `FINDINGS.md`.

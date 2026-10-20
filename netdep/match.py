@@ -123,6 +123,14 @@ def main():
                           'every prior search in this project. lazy: STORE/RMW from ordinary '
                           '.text (NOT boot-time) -- first-use/on-demand initialization, the '
                           'population "boot" structurally excludes. any: both combined.')
+    ap.add_argument('--include-indirect', action='store_true',
+                     help='also use register-tracked accesses from netdep.py: IND_LOAD '
+                          'counts as a read, IND_STORE/IND_RMW as a write. Off by default '
+                          'so earlier results reproduce.')
+    ap.add_argument('--field-sensitive', action='store_true',
+                     help='pair a writer and reader only when their struct-field paths '
+                          '(xref `field` column, needs netdep.py --dwarf-fields) are equal '
+                          'or nested; an empty/unknown field is compatible with anything.')
     args = ap.parse_args()
 
     globals_rows = load_tsv(os.path.join(args.out, 'globals.tsv'))
@@ -147,8 +155,21 @@ def main():
     for r in xref_rows:
         by_sym[r['sym']].append(r)
 
+    WRITE_ACCESS = ('STORE', 'RMW') + (('IND_STORE', 'IND_RMW') if args.include_indirect else ())
+    READ_ACCESS = ('LOAD', 'LOAD_GUARD', 'INDIRECT_CALL_READ') + (('IND_LOAD',) if args.include_indirect else ())
+
+    def field_tokens(path):
+        return [t for t in (path or '').replace('[]', '.[]').split('.') if t]
+
+    def fields_compatible(a, b):
+        ta, tb = field_tokens(a.get('field')), field_tokens(b.get('field'))
+        if not ta or not tb:
+            return True   # unknown field: never exclude
+        n = min(len(ta), len(tb))
+        return ta[:n] == tb[:n]
+
     def is_boot_writer(r):
-        return r['access'] in ('STORE', 'RMW') and (
+        return r['access'] in WRITE_ACCESS and (
             '.init.text' in r['func_section'] or 'initcall' in r['func_section']
         )
 
@@ -160,7 +181,7 @@ def main():
         # is the population is_boot_writer structurally excludes: the
         # Kconfig-invisible-dependency shape is identical, just the
         # writer's timing is runtime-triggered instead of boot-time.
-        return r['access'] in ('STORE', 'RMW') and not (
+        return r['access'] in WRITE_ACCESS and not (
             '.init.text' in r['func_section'] or 'initcall' in r['func_section']
         )
 
@@ -170,10 +191,11 @@ def main():
         is_init_writer = is_lazy_writer
     else:  # 'any'
         def is_init_writer(r):
-            return r['access'] in ('STORE', 'RMW')
+            return r['access'] in WRITE_ACCESS
 
     def is_reader(r):
-        return r['access'] in ('LOAD', 'LOAD_GUARD') and r['obj'].startswith(args.reader_scope)
+        # INDIRECT_CALL_READ: `call *global_ptr(%rip)` reads the pointer.
+        return r['access'] in READ_ACCESS and r['obj'].startswith(args.reader_scope)
 
     def has_guard(sym, obj, func):
         for r in by_sym[sym]:
@@ -205,13 +227,17 @@ def main():
             continue
         f2_syms.add(sym)
 
-        all_writers = [r for r in refs if r['access'] in ('STORE', 'RMW', 'ADDR')]
+        # ADDR stays here only to make F6 conservative (address escapes);
+        # it is never promoted to a writer itself.
+        all_writers = [r for r in refs if r['access'] in WRITE_ACCESS + ('ADDR',)]
         def_entries = defs[sym]
 
         for w in writers:
             for r in readers:
                 if w['obj'] == r['obj']:
                     continue  # same compilation unit -- not cross-unit
+                if args.field_sensitive and not fields_compatible(w, r):
+                    continue  # provably different struct fields
                 f3_pairs += 1
 
                 # F4: link-error filter. True iff some definition of sym

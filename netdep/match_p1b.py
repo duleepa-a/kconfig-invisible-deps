@@ -94,7 +94,7 @@ def main():
         )
 
     def is_reader(r):
-        return r['access'] in ('LOAD', 'LOAD_GUARD')
+        return r['access'] in ('LOAD', 'LOAD_GUARD', 'INDIRECT_CALL_READ')
 
     funnel = {
         'G1_same_object_writer_reader_pairs': 0,
