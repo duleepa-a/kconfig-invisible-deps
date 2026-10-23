@@ -12,8 +12,6 @@ that was never set up.
 > prove a bug. Deciding whether a spot is really a problem (for example, "the reader checks for NULL first")
 > is a manual step that this README also explains (Step 13). Read section 10 before quoting any result.
 
-This README assumes you know nothing about the project. Every command is shown in full.
-
 ---
 
 ## Contents
