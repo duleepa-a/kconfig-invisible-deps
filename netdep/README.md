@@ -703,7 +703,3 @@ done
 ```
 
 Run `match.py` once per mode with its own `--out` directory, because each run overwrites `candidates.tsv`.
-Result of this run: `ipv6_stub` has five rows with `drivers/net/vxlan.o` as the reader, all passing F0 to F5.
-This shows detection once the reader's object is in scope; it does not by itself show Kconfig separability.
-
-For the reasoning behind each result and every correction made along the way, read `FINDINGS.md`.
