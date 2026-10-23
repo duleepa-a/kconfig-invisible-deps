@@ -106,8 +106,6 @@ You need:
 | **Internet** | To download the kernel source and Ubuntu packages. |
 | **Time** | The kernel build is the slow step: expect tens of minutes on a 12-core machine (not timed precisely). Extraction takes a few minutes. |
 
-You do **not** need QEMU, a GPU, or any special hardware. Nothing in the main run boots a kernel.
-
 Software inside the container (already installed by the provided Dockerfile): Ubuntu 18.04, gcc 7.5, GNU make,
 binutils (`readelf`, `objdump`, `nm`), Python 3.6, git. All scripts use only the Python standard library
 (no `pip install` needed).
